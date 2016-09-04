@@ -45,6 +45,7 @@ def lamp_sub_pub(threadName):
 		backend.send_json(message)
 		#print(message)
 
+# GUI begins
 def lamps_ui_update():
 	global message
 	return message
