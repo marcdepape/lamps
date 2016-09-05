@@ -4,8 +4,13 @@ import thread
 from time import sleep
 import json
 import random
+import socket
 import serial
 ser = serial.Serial('/dev/ttyAMA0', 57600)
+
+# RPI HOSTNAME
+this_lamp = socket.gethostname()
+this_lamp = int(this_lamp.replace("lamp","",1))
 
 # SERVER
 server_context = zmq.Context()
@@ -23,7 +28,6 @@ client.setsockopt(zmq.SUBSCRIBE, b'')
 client.set_hwm(1)
 
 # LAMP VARIABLES
-this_lamp = 1
 motor_position = 0
 broadcast = 0
 out_update = json.dumps({"lamp": this_lamp, "position": motor_position}, sort_keys=True)
@@ -54,7 +58,7 @@ def lamp_status(threadName):
                 ser.write(bytes(letter.encode('ascii')))
             lamp_status = ser.readline()
             lamp_status = lamp_status.rstrip()
-            lamp_values = lamp_status.split(":",2) 
+            lamp_values = lamp_status.split(":",2)
             if lamp_values[0] == "dial":
                 global motor_position
                 motor_position = lamp_values[1]
@@ -65,13 +69,12 @@ def lamp_status(threadName):
                 #sleep(0.01)
             lamp_status = ser.readline()
             lamp_status = lamp_status.rstrip()
-            lamp_values = lamp_status.split(":",2)       
-        sleep(0.1)    
-        
+            lamp_values = lamp_status.split(":",2)
+        sleep(0.1)
+
 thread.start_new_thread(lamp_server, ("Server", ))
 thread.start_new_thread(lamp_status, ("Lamp", ))
 sleep(1)
 
 while True:
     update_lamp(client.recv_json())
-
