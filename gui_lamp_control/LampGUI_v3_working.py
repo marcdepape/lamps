@@ -23,8 +23,9 @@ from kivy.clock import Clock
 
 count = 0
 position = 0
-broadcast = [1,0,0,0,0,0]
-message = json.dumps({"count": count, "lamp": -1, "position": position, "broadcast": broadcast[0]}, sort_keys=True)
+broadcast = [1,0,0,0]
+lamp_ip = [-1,-1,-1,-1]
+message = json.dumps({"count": count, "lamp": -1, "position": position, "broadcast": broadcast[0], "ip": -1}, sort_keys=True)
 
 def lamp_sub_pub(threadName):
 	sleep(2)
@@ -37,11 +38,14 @@ def lamp_sub_pub(threadName):
 		global broadcast
 		global message
 
+		global lamp_ip
+		lamp_ip[message["lamp"]-1] = message["ip"]
+
 		count = count + 1
 		if broadcast[message["lamp"]-1] == 1:
 			position = message["position"]
 
-		message = json.dumps({"count": count, "lamp": message["lamp"], "position": position, "broadcast": broadcast[message["lamp"]-1]}, sort_keys=True)
+		message = json.dumps({"count": count, "lamp": message["lamp"], "position": position, "broadcast": broadcast[message["lamp"]-1], "ip": lamp_ip}, sort_keys=True)
 		backend.send_json(message)
 		#print(message)
 
@@ -136,5 +140,3 @@ class LampApp(App):
 thread.start_new_thread(lamp_sub_pub, ("Sub_Pub", ))
 if __name__ == '__main__':
 	LampApp().run()
-
-

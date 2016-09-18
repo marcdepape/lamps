@@ -7,4 +7,21 @@ gst-launch-1.0 rtspsrc location=rtsp://lamp3.local:8554/mic ! queue ! rtpvorbisd
 
 gst-launch-1.0 rtspsrc location=rtsp://lamp4.local:8554/mic ! queue ! rtpvorbisdepay ! vorbisdec ! audioconvert ! audio/x-raw,format=S16LE,channels=2 ! alsasink device="sysdefault:CARD=sndrpiwsp"
 
-;WhiZgDYUthsffBangpkuXqkAi8]tg4s
+# UDP
+
+# CAST
+
+# LAMP 1
+gst-launch-1.0 -v alsasrc ! audioconvert ! avenc_ac3 ! rtpac3pay ! multiudpsink clients=lamp2.local:1901,lamp3.local:1901,lamp4.local:1901
+
+# LAMP 2
+gst-launch-1.0 -v alsasrc ! audioconvert ! avenc_ac3 ! rtpac3pay ! multiudpsink clients=lamp1.local:1902,lamp3.local:1902,lamp4.local:1902
+
+# LAMP 3
+gst-launch-1.0 -v alsasrc ! audioconvert ! avenc_ac3 ! rtpac3pay ! multiudpsink clients=lamp1.local:1903,lamp2.local:1903,lamp4.local:1903
+
+# LAMP 4
+gst-launch-1.0 -v alsasrc ! audioconvert ! avenc_ac3 ! rtpac3pay ! multiudpsink clients=lamp1.local:1904,lamp2.local:1904,lamp3.local:1904
+
+# LISTEN
+gst-launch-1.0 udpsrc port=1903 ! audio/x-ac3,channels=2,rate=44100 ! ac3parse ! a52dec ! audioconvert ! audio/x-raw,format=S32LE,channels=2 ! alsasink device="sysdefault:CARD=sndrpiwsp" sync=false

@@ -6,11 +6,18 @@ import json
 import random
 import socket
 import serial
+import os
 ser = serial.Serial('/dev/ttyAMA0', 57600)
 
 # RPI HOSTNAME
 this_lamp = socket.gethostname()
 this_lamp = int(this_lamp.replace("lamp","",1))
+
+# RPI IP ADDRESS
+ip = os.popen('ifconfig wlan0 | grep "inet\ addr"')
+lamp_ip = ((ip.read()).strip()).split("addr:")
+lamp_ip = lamp_ip[1].split(" ")
+lamp_ip = lamp_ip[0]
 
 # SERVER
 server_context = zmq.Context()
@@ -30,11 +37,11 @@ client.set_hwm(1)
 # LAMP VARIABLES
 motor_position = 0
 broadcast = 0
-out_update = json.dumps({"lamp": this_lamp, "position": motor_position}, sort_keys=True)
+out_update = json.dumps({"ip": lamp_ip,"lamp": this_lamp, "position": motor_position}, sort_keys=True)
 
 def lamp_server(threadName):
     while True:
-        out_update = json.dumps({"lamp": this_lamp, "position": motor_position}, sort_keys=True)
+        out_update = json.dumps({"ip": lamp_ip,"lamp": this_lamp, "position": motor_position}, sort_keys=True)
         server.send_json(out_update)
         sleep(0.1)
 
