@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
 	//pipeline << "audiowsinclimit cutoff=9000 ! ";
 
 	// vorbis encoder (default quality is 0.3)
-	pipeline << "vorbisenc quality=0.9 ! queue leaky=downstream max-size-buffers=16 ! ";
+	pipeline << "vorbisenc quality=0.7 ! queue leaky=downstream max-size-buffers=16 ! ";
 	pipeline << "rtpvorbispay name=pay0 pt=96";
 
 	gst_rtsp_media_factory_set_shared(factory, TRUE);
