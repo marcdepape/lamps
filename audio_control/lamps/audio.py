@@ -35,8 +35,12 @@ class LampAudioStream(object):
 
     @staticmethod
     def _pipeline_template():
-        return ("rtspsrc latency=250 name={} ! "
+        return ("rtspsrc debug=TRUE latency=250 name={} ! "
+                "queue ! "
+                "rtpvorbisdepay ! "
                 "vorbisdec ! "
                 "audioamplify name={} ! "
-                "alsasink "
+                "audioconvert ! "
+                "audio/x-raw,format=S16LE,channels=2 ! "
+                "alsasink device=\"sysdefault:CARD=sndrpiwsp\""
                 ).format(RTSP_ELEMENT_NAME, AMP_ELEMENT_NAME)

@@ -5,15 +5,31 @@ import time
 
 stream = lamps.LampAudioStream()
 
-stream.start('localhost')
-time.sleep(5)
+for x in range(0,5):
 
-stream.volume = 0.25
-time.sleep(5)
+    stream.start('lamp1.local')
+    print ("listening to lamp1")
+    time.sleep(2)
 
-stream.start('localhost')
-stream.volume = 1.5
-time.sleep(5)
+    stream.volume = 0.5
+    time.sleep(10)
+    stream.stop
+
+    stream.start('lamp2.local')
+    print ("listening to lamp2")
+    time.sleep(2)
+
+    stream.volume = 1.5
+    time.sleep(10)
+    stream.stop
+
+    stream.start('lamp3.local')
+    print ("listening to lamp3")
+    time.sleep(2)
+
+    stream.volume = 1.0
+    time.sleep(10)
+    stream.stop
 
 stream.stop()
-time.sleep(5)
+time.sleep(2)
