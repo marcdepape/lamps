@@ -1,1 +1,4 @@
 .DS_Store
+*.xml
+
+audio_control/.idea/pylamps.iml
