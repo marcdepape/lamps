@@ -25,13 +25,14 @@ count = 0
 position = 0
 broadcast = [1,0,0,0]
 lamp_ip = [-1,-1,-1,-1]
-message = json.dumps({"count": count, "lamp": -1, "position": position, "broadcast": broadcast[0], "ip": -1}, sort_keys=True)
+message = json.dumps({"count": count, "ip": lamp_ip, "lamp": -1, "live": -1, "position": position, "broadcast": broadcast[0], "ip": -1}, sort_keys=True)
 
 def lamp_sub_pub(threadName):
 	sleep(2)
 	while True:
 		message = frontend.recv_json()
 		message = json.loads(message)
+		print message
 
 		global count
 		global position
@@ -45,7 +46,7 @@ def lamp_sub_pub(threadName):
 		if broadcast[message["lamp"]-1] == 1:
 			position = message["position"]
 
-		message = json.dumps({"count": count, "lamp": message["lamp"], "position": position, "broadcast": broadcast[message["lamp"]-1], "ip": lamp_ip}, sort_keys=True)
+		message = json.dumps({"count": count, "ip": lamp_ip, "lamp": message["lamp"], "live": message["live"], "position": position, "broadcast": broadcast[message["lamp"]-1], }, sort_keys=True)
 		backend.send_json(message)
 		#print(message)
 

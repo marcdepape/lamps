@@ -37,20 +37,47 @@ client.set_hwm(1)
 # LAMP VARIABLES
 motor_position = 0
 broadcast = 0
-out_update = json.dumps({"ip": lamp_ip,"lamp": this_lamp, "position": motor_position}, sort_keys=True)
+lamp_is_live = 0
+out_update = json.dumps({"ip": lamp_ip,"lamp": this_lamp, "live": lamp_is_live, "position": motor_position}, sort_keys=True)
+
+def launch_udp_audio_multicast(update):
+    addresses = update["ip"]
+    port = "190" + str(this_lamp)
+    launch_server = "gst-launch-1.0 -v alsasrc ! audioconvert ! avenc_ac3 ! rtpac3pay ! multiudpsink clients="
+    for i in range(len(addresses)):
+        if addresses[i] == -1:
+            return -1
+    for i in range(len(addresses)):
+        if i != this_lamp-1:
+            launch_server = launch_server + str(addresses[i]) + ":" + port
+        if i != len(addresses)-1:
+            launch_server = launch_server + ","
+        else:
+            launch_server = launch_server + " &"
+
+    os.popen(launch_server)
+    sleep(5)
+
+    global lamp_is_live
+    lamp_is_live = 1
+
+    print launch_server
 
 def lamp_server(threadName):
     while True:
-        out_update = json.dumps({"ip": lamp_ip,"lamp": this_lamp, "position": motor_position}, sort_keys=True)
+        out_update = json.dumps({"ip": lamp_ip,"lamp": this_lamp, "live": lamp_is_live, "position": motor_position}, sort_keys=True)
         server.send_json(out_update)
         sleep(0.1)
 
 def update_lamp(update):
     update = json.loads(update)
     if update["lamp"] == this_lamp:
-        print("NEW: " + str(update))
+        if lamp_is_live == 0:
+            launch_udp_audio_multicast(update)
+        #print("NEW: " + str(update))
         global broadcast
         broadcast = update["broadcast"]
+
         global motor_position
         motor_position = update["position"]
     else:
