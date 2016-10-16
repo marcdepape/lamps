@@ -93,14 +93,17 @@ def ping_all_lamps(addresses):
             if addresses[ping] != -1:
                 check = True
                 while check:
-                    res = subprocess.call(['sudo','ping','1', addresses[ping]])
-                    if res == 0:
+                    try:
+                        res = subprocess.check_output(['sudo','ping','-q','-c','1', addresses[ping]],universal_newlines=True)
+                        res = res.split(",")
+                        res = res[1].split(" ")
+                        status = res[1]
+                        status = int(status)
                         #print "ping to Lamp" + str(ping + 1), addresses[ping], "OK"
                         check = False
-                    elif res == 2:
-                        #print "no response from", addresses[ping]
-            #else:
-                #print "-1: No registered yet"
+                    except subprocess.CalledProcessError as e:
+                        #print "no response from Lamp" + str(ping + 1), addresses[ping]
+                        check = True
 
 def ping_forever(threadName):
     while True:
