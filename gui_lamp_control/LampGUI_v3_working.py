@@ -25,6 +25,8 @@ count = 0
 position = 0
 broadcast = [1,0,0,0]
 lamp_ip = [-1,-1,-1,-1]
+go_live = 0
+to_lamp = 1
 message = json.dumps({"count": count, "ip": lamp_ip, "lamp": -1, "live": -1, "position": position, "broadcast": broadcast[0], "ip": -1}, sort_keys=True)
 
 def lamp_sub_pub(threadName):
@@ -32,23 +34,49 @@ def lamp_sub_pub(threadName):
 	while True:
 		message = frontend.recv_json()
 		message = json.loads(message)
-		print message
+		#print message
 
 		global count
 		global position
 		global broadcast
 		global message
+		global to_lamp
 
 		global lamp_ip
 		lamp_ip[message["lamp"]-1] = message["ip"]
 
+		if go_live != 1:
+			all_lamps_live(lamp_ip)
+
 		count = count + 1
+
+		if count > 2000:
+			count = 0;
+			to_lamp = to_lamp + 1;
+			if to_lamp > 3:
+				to_lamp = 1
+
 		if broadcast[message["lamp"]-1] == 1:
 			position = message["position"]
 
-		message = json.dumps({"count": count, "ip": lamp_ip, "lamp": message["lamp"], "live": message["live"], "position": position, "broadcast": broadcast[message["lamp"]-1], }, sort_keys=True)
+		message = json.dumps({"count": count, "ip": lamp_ip, "lamp": message["lamp"], "live": go_live, "position": position, "broadcast": broadcast[message["lamp"]-1], "listen": to_lamp}, sort_keys=True)
 		backend.send_json(message)
-		#print(message)
+		print(message)
+
+def all_lamps_live(lamp_addresses):
+	global go_live
+	num = 0
+	for l in range(0,len(lamp_addresses)):
+		if lamp_addresses[l] == -1:
+			#print str(l) + " EMPTY!"
+			pass
+		else:
+			#print str(l) + "LAMP!"
+			num = num + 1
+
+	if num == len(lamp_addresses):
+		print "ALL LAMPS!"
+		go_live = 1
 
 # GUI begins
 def lamps_ui_update():

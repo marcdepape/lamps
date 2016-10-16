@@ -38,13 +38,13 @@ client.set_hwm(1)
 # LAMP VARIABLES
 motor_position = 0
 broadcast = 0
-lamp_is_live = 0
+listening = -1
 lamp_addresses = [-1,-1,-1,-1]
-out_update = json.dumps({"ip": lamp_ip,"lamp": this_lamp, "live": lamp_is_live, "position": motor_position}, sort_keys=True)
+out_update = json.dumps({"ip": lamp_ip,"lamp": this_lamp, "position": motor_position}, sort_keys=True)
 
 def lamp_server(threadName):
     while True:
-        out_update = json.dumps({"ip": lamp_ip,"lamp": this_lamp, "live": lamp_is_live, "position": motor_position}, sort_keys=True)
+        out_update = json.dumps({"ip": lamp_ip,"lamp": this_lamp, "position": motor_position}, sort_keys=True)
         server.send_json(out_update)
         sleep(0.1)
 
@@ -60,6 +60,9 @@ def update_lamp(update):
 
         global lamp_addresses
         lamp_addresses = update["ip"]
+
+        if update["live"] == 1:
+            listen_to_lamp(update["listen"], lamp_addresses)
     else:
         pass
 
@@ -85,6 +88,16 @@ def lamp_status(threadName):
             lamp_status = lamp_status.rstrip()
             lamp_values = lamp_status.split(":",2)
         sleep(0.1)
+
+def listen_to_lamp(to_lamp, addresses):
+    global listening
+    if listening != to_lamp:
+        try:
+            response = subprocess.check_output('gst-launch-1.0 rtspsrc location=rtsp://' + addresses[to_lamp-1] + ':8554/mic ! queue ! rtpvorbisdepay ! vorbisdec ! audioconvert ! audio/x-raw,format=S32LE,channels=2 ! alsasink device="sysdefault:CARD=sndrpiwsp"',universal_newlines=True,shell=True)
+            print response
+            listening = to_lamp
+        except subprocess.CalledProcessError as e:
+            pass
 
 def ping_all_lamps(addresses):
     #print addresses
