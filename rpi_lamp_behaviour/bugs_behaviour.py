@@ -93,10 +93,12 @@ def listen_to_lamp(to_lamp, addresses):
     global listening
     if listening != to_lamp:
         try:
-            response = subprocess.check_output('gst-launch-1.0 rtspsrc location=rtsp://' + addresses[to_lamp-1] + ':8554/mic ! queue ! rtpvorbisdepay ! vorbisdec ! audioconvert ! audio/x-raw,format=S32LE,channels=2 ! alsasink device="sysdefault:CARD=sndrpiwsp"',universal_newlines=True,shell=True)
-            print response
+            print "YES!"
+            #response = subprocess.check_output('gst-launch-1.0 rtspsrc location=rtsp://' + addresses[to_lamp-1] + ':8554/mic ! queue ! rtpvorbisdepay ! vorbisdec ! audioconvert ! audio/x-raw,format=S32LE,channels=2 ! alsasink device="sysdefault:CARD=sndrpiwsp"',universal_newlines=True,shell=True)
+            response = subprocess.Popen('gst-launch-1.0 rtspsrc location=rtsp://' + addresses[to_lamp-1] + ':8554/mic ! queue ! rtpvorbisdepay ! vorbisdec ! audioconvert ! audio/x-raw,format=S32LE,channels=2 ! alsasink device="sysdefault:CARD=sndrpiwsp"',universal_newlines=True,shell=True)
             listening = to_lamp
         except subprocess.CalledProcessError as e:
+            print "NO!"
             pass
 
 def ping_all_lamps(addresses):
