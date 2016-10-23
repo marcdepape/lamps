@@ -8,8 +8,6 @@ import subprocess
 from ping_all_lamps import PingLamps
 from check_status import CheckStatus
 
-ser = serial.Serial('/dev/ttyAMA0', 57600)
-
 # RPI HOSTNAME
 this_lamp = subprocess.check_output('hostname')
 this_lamp = int(this_lamp.replace("lamp","",1))
@@ -48,7 +46,9 @@ motor_position = 0
 broadcast = 0
 listening = -1
 live_audio = -1
+to_lamp = -1
 lamp_addresses = [-1,-1,-1,-1]
+count = -1
 out_update = json.dumps({"ip": lamp_ip,"lamp": this_lamp, "position": motor_position}, sort_keys=True)
 
 def lamp_server():
@@ -70,8 +70,12 @@ def update_lamp(update):
         global lamp_addresses
         lamp_addresses = update["ip"]
 
-        if update["live"] == 1:
-            listen_to_lamp(update["listen"], lamp_addresses)
+        global count
+        count = update["count"]
+
+        global to_lamp
+        to_lamp = update["listen"]
+
     else:
         pass
 
@@ -91,10 +95,6 @@ def listen_to_lamp(to_lamp, addresses):
             print "NO!"
             pass
 
-def audio_thread(to_lamp, addresses, threadName):
-    print("NEW audio")
-    subprocess.Popen('gst-launch-1.0 rtspsrc location=rtsp://' + addresses[to_lamp-1] + ':8554/mic ! queue ! rtpvorbisdepay ! vorbisdec ! audioconvert ! audio/x-raw,format=S32LE,channels=2 ! alsasink device="sysdefault:CARD=sndrpiwsp"',universal_newlines=True,shell=True)
-
 # THREADS
 p = threading.Thread(name='ping_all_other_lamps', target=ping_all.forever)
 l = threading.Thread(name='check_lamp_atmega', target=check_lamp.forever)
@@ -105,11 +105,39 @@ p.daemon = True
 l.daemon = True
 s.daemon = True
 
+def find_audio_process():
+    gst = subprocess.Popen(('ps', 'aux'), stdout=subprocess.PIPE)
+    stream = subprocess.check_output(('grep', 'gst-launch'), stdin=gst.stdout)
+    gst.wait()
+    stream = stream.strip().split("pi")
+    for i in range(0,len(stream)):
+        stream[i].strip()
+        found = stream[i].find("Sl+")
+        if found != -1:
+            stream = stream[i].strip().split(" ")
+            return stream[0]
+    return -1
+
 if __name__ == '__main__':
     p.start()
     l.start()
     s.start()
-    sleep(1)
+
+    subprocess.Popen('gst-launch-1.0 rtspsrc location=rtsp://lamp1.local:8554/mic ! queue ! rtpvorbisdepay ! vorbisdec ! audioconvert ! audio/x-raw,format=S32LE,channels=2 ! volume volume=1.5 ! level ! alsasink device="sysdefault:CARD=sndrpiwsp"',universal_newlines=True,shell=True)
+    sleep(7)
+    print "CHECKING!"
+    process = find_audio_process()
+    print process
+
+    if process != -1:
+        subprocess.Popen('kill -9 ' + process, shell=True)
+
+    process = find_audio_process()
+
+    if process != -1:
+        subprocess.Popen('kill -9 ' + process, shell=True)
+    else:
+        print "NOTHING!"
 
     while True:
         update_lamp(client.recv_json())
