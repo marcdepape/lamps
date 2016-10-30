@@ -1,12 +1,17 @@
 # Bugs control program (Client, Server, Microcontroller)
 import zmq
-import threading
+from gi.repository import Gst, GObject
+import gi
+from threading import Thread
 from time import sleep
 import json
 import serial
 import subprocess
 from ping_all_lamps import PingLamps
 from check_status import CheckStatus
+from stream_control import LampStream
+from multiprocessing import Process, Queue
+
 
 # RPI HOSTNAME
 this_lamp = subprocess.check_output('hostname')
@@ -40,6 +45,18 @@ ping_all = PingLamps(this_lamp)
 
 # CHECK ATMEGA
 check_lamp = CheckStatus()
+
+# INITIALIZE STREAMING
+GObject.threads_init()
+Gst.init(None)
+
+mainloop = GObject.MainLoop()
+m = Thread(name="mainloop", target=mainloop.run)
+m.daemon = True
+m.start()
+
+# LAMP STREAMS
+this_stream = LampStream(0.05)
 
 # LAMP VARIABLES
 motor_position = 0
@@ -75,70 +92,93 @@ def update_lamp(update):
 
         global to_lamp
         to_lamp = update["listen"]
-
     else:
         pass
 
-def listen_to_lamp(to_lamp, addresses):
-    global listening
-    if listening != -1:
+def audio_testX():
+    vol = Queue()
+    play = Queue()
+    t1 = Process(name='listen1', target=this_stream.listen, args=(vol, play, "rtsp://192.168.100.162:8554/mic",))
+    print "START!"
+    t1.start()
+    print "SUCCESS?"
+    while this_stream.state(play) == False:
         pass
-    if listening != to_lamp:
-        try:
-            print "YES!"
-            #response = subprocess.check_output('gst-launch-1.0 rtspsrc location=rtsp://' + addresses[to_lamp-1] + ':8554/mic ! queue ! rtpvorbisdepay ! vorbisdec ! audioconvert ! audio/x-raw,format=S32LE,channels=2 ! alsasink device="sysdefault:CARD=sndrpiwsp"',universal_newlines=True,shell=True)
-            #response = os.popen('gst-launch-1.0 rtspsrc location=rtsp://' + addresses[to_lamp-1] + ':8554/mic ! queue ! rtpvorbisdepay ! vorbisdec ! audioconvert ! audio/x-raw,format=S32LE,channels=2 ! alsasink device="sysdefault:CARD=sndrpiwsp"')
-            #response = subprocess.Popen('gst-launch-1.0 rtspsrc location=rtsp://' + addresses[to_lamp-1] + ':8554/mic ! queue ! rtpvorbisdepay ! vorbisdec ! audioconvert ! audio/x-raw,format=S32LE,channels=2 ! alsasink device="sysdefault:CARD=sndrpiwsp"',universal_newlines=True,shell=True)
-            listening = to_lamp
-            #thread.start_new_thread(audio_thread, (to_lamp,addresses, "Audio", ))
-        except subprocess.CalledProcessError as e:
-            print "NO!"
-            pass
+    this_stream.fade(vol, "in")
+    sleep(5)
+    this_stream.fade(vol, "out")
+    sleep(1)
+    print "STOP!"
+    t1.terminate()
 
+def audio_test():
+    lamp_stream = start_stream()
+    sleep(10)
+    stop_stream(lamp_stream)
+
+def start_stream():
+    vol = Queue()
+    play = Queue()
+    lamp_stream = Process(name='listen', target=this_stream.listen, args=(vol, play, "rtsp://192.168.100.162:8554/mic",))
+    print "START!"
+    lamp_stream.start()
+    while this_stream.state(play) == False:
+        pass
+    this_stream.fade(vol, "in")
+    return lamp_stream
+
+def stop_stream(lamp_stream):
+    print "STOP!"
+    vol = Queue()
+    this_stream.fade(vol,"out")
+    lamp_stream.terminate()
+
+class AudioControl(object):
+
+    def __init__(self, this_stream):
+        self.this_stream = this_stream
+        self.lamp_stream = ""
+        self.vol = Queue()
+        self.play = Queue()
+
+    def test(self):
+        self.start_stream()
+        sleep(3)
+        self.stop_stream()
+
+    def start_stream(self):
+        self.lamp_stream = Process(name='listen', target=self.this_stream.listen, args=(self.vol, self.play, "rtsp://192.168.100.162:8554/mic",))
+        print "START!"
+        self.lamp_stream.start()
+        while self.this_stream.state(self.play) == False:
+            pass
+        self.this_stream.fade(self.vol, "in")
+
+    def stop_stream(self):
+        print "STOP!"
+        self.this_stream.fade(self.vol,"out")
+        self.lamp_stream.terminate()
+
+audio = AudioControl(this_stream)
+
+#---------------------------------------------------------------------------------------------
 # THREADS
-p = threading.Thread(name='ping_all_other_lamps', target=ping_all.forever)
-l = threading.Thread(name='check_lamp_atmega', target=check_lamp.forever)
-s = threading.Thread(name='lamp_server', target=lamp_server)
+p = Thread(name='ping_all_other_lamps', target=ping_all.forever)
+l = Thread(name='check_lamp_atmega', target=check_lamp.forever)
+s = Thread(name='lamp_server', target=lamp_server)
+a = Thread(name='audio_test', target=audio.test)
 
 # SET THREADS
 p.daemon = True
 l.daemon = True
 s.daemon = True
-
-def find_audio_process():
-    gst = subprocess.Popen(('ps', 'aux'), stdout=subprocess.PIPE)
-    stream = subprocess.check_output(('grep', 'gst-launch'), stdin=gst.stdout)
-    gst.wait()
-    stream = stream.strip().split("pi")
-    for i in range(0,len(stream)):
-        stream[i].strip()
-        found = stream[i].find("Sl+")
-        if found != -1:
-            stream = stream[i].strip().split(" ")
-            return stream[0]
-    return -1
+a.daemon = True
 
 if __name__ == '__main__':
     p.start()
     l.start()
     s.start()
-
-    subprocess.Popen('gst-launch-1.0 rtspsrc location=rtsp://lamp1.local:8554/mic ! queue ! rtpvorbisdepay ! vorbisdec ! audioconvert ! audio/x-raw,format=S32LE,channels=2 ! volume volume=1.5 ! level ! alsasink device="sysdefault:CARD=sndrpiwsp"',universal_newlines=True,shell=True)
-    sleep(7)
-    print "CHECKING!"
-    process = find_audio_process()
-    print process
-
-    if process != -1:
-        subprocess.Popen('kill -9 ' + process, shell=True)
-
-    process = find_audio_process()
-
-    if process != -1:
-        subprocess.Popen('kill -9 ' + process, shell=True)
-    else:
-        print "NOTHING!"
-
+    a.start()
     while True:
         update_lamp(client.recv_json())
         motor_position = check_lamp.update(broadcast, motor_position)
