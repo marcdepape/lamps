@@ -95,90 +95,22 @@ def update_lamp(update):
     else:
         pass
 
-def audio_testX():
-    vol = Queue()
-    play = Queue()
-    t1 = Process(name='listen1', target=this_stream.listen, args=(vol, play, "rtsp://192.168.100.162:8554/mic",))
-    print "START!"
-    t1.start()
-    print "SUCCESS?"
-    while this_stream.state(play) == False:
-        pass
-    this_stream.fade(vol, "in")
-    sleep(5)
-    this_stream.fade(vol, "out")
-    sleep(1)
-    print "STOP!"
-    t1.terminate()
-
-def audio_test():
-    lamp_stream = start_stream()
-    sleep(10)
-    stop_stream(lamp_stream)
-
-def start_stream():
-    vol = Queue()
-    play = Queue()
-    lamp_stream = Process(name='listen', target=this_stream.listen, args=(vol, play, "rtsp://192.168.100.162:8554/mic",))
-    print "START!"
-    lamp_stream.start()
-    while this_stream.state(play) == False:
-        pass
-    this_stream.fade(vol, "in")
-    return lamp_stream
-
-def stop_stream(lamp_stream):
-    print "STOP!"
-    vol = Queue()
-    this_stream.fade(vol,"out")
-    lamp_stream.terminate()
-
-class AudioControl(object):
-
-    def __init__(self, this_stream):
-        self.this_stream = this_stream
-        self.lamp_stream = ""
-        self.vol = Queue()
-        self.play = Queue()
-
-    def test(self):
-        self.start_stream()
-        sleep(3)
-        self.stop_stream()
-
-    def start_stream(self):
-        self.lamp_stream = Process(name='listen', target=self.this_stream.listen, args=(self.vol, self.play, "rtsp://192.168.100.162:8554/mic",))
-        print "START!"
-        self.lamp_stream.start()
-        while self.this_stream.state(self.play) == False:
-            pass
-        self.this_stream.fade(self.vol, "in")
-
-    def stop_stream(self):
-        print "STOP!"
-        self.this_stream.fade(self.vol,"out")
-        self.lamp_stream.terminate()
-
-audio = AudioControl(this_stream)
-
 #---------------------------------------------------------------------------------------------
 # THREADS
 p = Thread(name='ping_all_other_lamps', target=ping_all.forever)
 l = Thread(name='check_lamp_atmega', target=check_lamp.forever)
 s = Thread(name='lamp_server', target=lamp_server)
-a = Thread(name='audio_test', target=audio.test)
 
 # SET THREADS
 p.daemon = True
 l.daemon = True
 s.daemon = True
-a.daemon = True
 
 if __name__ == '__main__':
     p.start()
     l.start()
     s.start()
-    a.start()
+    Thread(name='start_stream', target=this_stream.start_stream).start()
     while True:
         update_lamp(client.recv_json())
         motor_position = check_lamp.update(broadcast, motor_position)
