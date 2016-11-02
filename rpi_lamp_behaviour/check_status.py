@@ -42,6 +42,7 @@ class CheckStatus(object):
         self.running = False
 
     def forever(self):
+        self.running = True
         while self.running == True:
             sleep(0.1)
             if self.broadcast == 1:

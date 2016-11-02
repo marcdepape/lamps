@@ -35,6 +35,7 @@ class PingLamps(object):
         self.addresses = addresses
 
     def forever(self):
+        self.running = True
         while self.running == True:
             self.keep_live()
             sleep(2)
