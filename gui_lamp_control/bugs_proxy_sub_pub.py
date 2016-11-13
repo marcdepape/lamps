@@ -28,9 +28,9 @@ class LampProxy(object):
         self.position = [-1,-1,-1,-1]
         self.broadcast = [-1,-1,-1,-1]
         self.lamp_ip = [-1,-1,-1,-1]
-        self.live = 0
         self.to_lamp = [-1,-1,-1,-1]
         self.receive = ""
+        self.live = 0
         self.message = json.dumps({"ip": -1, "lamp": -1, "live": -1, "position": -1, "broadcast": -1, "listen": -1}, sort_keys=True)
 
     def stop(self):

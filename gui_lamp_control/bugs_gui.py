@@ -1,5 +1,5 @@
 import json
-from time import sleep
+from time import sleep, clock
 from threading import Thread
 from bugs_proxy_sub_pub import LampProxy
 
@@ -11,6 +11,8 @@ from kivy.properties import StringProperty
 from kivy.clock import Clock
 
 class BugsDashboard(Widget):
+    number_of_lamps = 4
+
     lamp1_broadcast = StringProperty()
     lamp1_listen = StringProperty()
     lamp1_position = StringProperty()
@@ -31,6 +33,8 @@ class BugsDashboard(Widget):
     lamp4_position = StringProperty()
     lamp4_ip = StringProperty()
 
+    timer = 0
+
     def __init__(self, **kwargs):
         super(BugsDashboard, self).__init__(**kwargs)
         self.proxy = LampProxy()
@@ -45,7 +49,6 @@ class BugsDashboard(Widget):
     def update_GUI(self, rt):
         update = json.loads(self.proxy.message)
         lamp = update["lamp"]
-        print update
         if lamp == 1:
             self.lamp1_broadcast = str(update["broadcast"])
             self.lamp1_listen = str(update["listen"])
@@ -66,6 +69,16 @@ class BugsDashboard(Widget):
             self.lamp4_listen = str(update["listen"])
             self.lamp4_position = str(update["position"])
             self.lamp4_ip = str(update["ip"][lamp-1])
+        self.update_lamp_properties(update)
+
+    def update_lamp_properties(self, update):
+        print clock()
+        if clock() - self.timer > 2.0:
+            for l in range(0, self.number_of_lamps):
+                self.proxy.to_lamp[l] = 1
+            self.timer = clock()
+
+
 
 class BugsApp(App):
     def build(self):
