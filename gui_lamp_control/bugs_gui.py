@@ -44,32 +44,32 @@ class BugsDashboard(Widget):
 
     def update_GUI(self, rt):
         update = json.loads(self.proxy.message)
+        lamp = update["lamp"]
         print update
-        if update["lamp"] == 1:
+        if lamp == 1:
             self.lamp1_broadcast = str(update["broadcast"])
             self.lamp1_listen = str(update["listen"])
             self.lamp1_position = str(update["position"])
-            self.lamp1_ip = str(update["ip"][update["lamp"]-1])
-        elif update["lamp"] == 2:
+            self.lamp1_ip = str(update["ip"][lamp-1])
+        elif lamp == 2:
             self.lamp2_broadcast = str(update["broadcast"])
             self.lamp2_listen = str(update["listen"])
             self.lamp2_position = str(update["position"])
-            self.lamp2_ip = str(update["ip"][update["lamp"]-1])
-        elif update["lamp"] == 3:
+            self.lamp2_ip = str(update["ip"][lamp-1])
+        elif lamp == 3:
             self.lamp3_broadcast = str(update["broadcast"])
             self.lamp3_listen = str(update["listen"])
             self.lamp3_position = str(update["position"])
-            self.lamp3_ip = str(update["ip"][update["lamp"]-1])
-        elif update["lamp"] == 4:
+            self.lamp3_ip = str(update["ip"][lamp-1])
+        elif lamp == 4:
             self.lamp4_broadcast = str(update["broadcast"])
             self.lamp4_listen = str(update["listen"])
             self.lamp4_position = str(update["position"])
-            self.lamp4_ip = str(update["ip"][update["lamp"]-1])
+            self.lamp4_ip = str(update["ip"][lamp-1])
 
-
-class LampApp(App):
+class BugsApp(App):
     def build(self):
         return BugsDashboard()
 
 if __name__ == '__main__':
-	LampApp().run()
+	BugsApp().run()

@@ -25,14 +25,13 @@ class LampProxy(object):
         self.running = False
 
         # MESSAGE KEYS
-        self.count = 0
-        self.position = 0
-        self.broadcast = [1,0,0,0]
+        self.position = [-1,-1,-1,-1]
+        self.broadcast = [-1,-1,-1,-1]
         self.lamp_ip = [-1,-1,-1,-1]
         self.live = 0
-        self.to_lamp = 1
+        self.to_lamp = [-1,-1,-1,-1]
         self.receive = ""
-        self.message = json.dumps({"count": self.count, "ip": self.lamp_ip, "lamp": -1, "live": -1, "position": self.position, "broadcast": self.broadcast[0], "ip": -1}, sort_keys=True)
+        self.message = json.dumps({"ip": -1, "lamp": -1, "live": -1, "position": -1, "broadcast": -1, "listen": -1}, sort_keys=True)
 
     def stop(self):
         self.running = False
@@ -42,20 +41,8 @@ class LampProxy(object):
         while self.running == True:
             self.receive = self.frontend.recv_json()
             self.receive = json.loads(self.receive)
-
-            self.count = self.count + 1
-
-            if self.count > 2000:
-                self.count = 0
-                self.to_lamp = self.to_lamp + 1
-
-                if self.to_lamp > 3:
-                    self.to_lamp = 1
-
-            if self.broadcast[self.receive["lamp"]-1] == 1:
-    			self.position = self.receive["position"]
-
-            self.message = json.dumps({"count": self.count, "ip": self.lamp_ip, "lamp": self.receive["lamp"], "live": self.live, "position": self.position, "broadcast": self.broadcast[self.receive["lamp"]-1], "listen": self.to_lamp}, sort_keys=True)
+            lamp = self.receive["lamp"]-1
+            self.message = json.dumps({"ip": self.lamp_ip, "lamp": self.receive["lamp"], "live": self.live, "position": self.position[lamp], "broadcast": self.broadcast[lamp], "listen": self.to_lamp[lamp]}, sort_keys=True)
             self.backend.send_json(self.message)
 
     def setup(self):
