@@ -84,7 +84,7 @@ class BugsDashboard(GridLayout):
             self.lamp4_listen = str(update["listen"])
             self.lamp4_position = str(update["position"])
             self.lamp4_ip = str(update["ip"][lamp-1])
-        self.update_lamp_properties(update)
+        #self.update_lamp_properties(update)
 
     def update_lamp_properties(self, update):
         if clock() - self.timer > 2.0:
@@ -93,31 +93,41 @@ class BugsDashboard(GridLayout):
             self.timer = clock()
 
     def change_listen(self, lamp, to_lamp):
-        self.assign_listeners()
+        self.assign_listeners(lamp, to_lamp)
         self.listen_ids[lamp-1][to_lamp-1].state = "down"
         self.proxy.to_lamp[lamp-1] = to_lamp
 
 
-    def assign_listeners(self):
-        choice = ["x","x","x","x"]
+    def assign_listeners(self, lamp, to_lamp):
+        channel = ["x" for i in range(self.number_of_lamps)]
+        print channel
+        broadcast_lamps = []
         broadcasters = 0
+
+        channel[to_lamp-1] = -1
+        broadcast_lamps.append(to_lamp-1)
+        channel[lamp-1] = to_lamp-1
+        broadcasters += 1
+
         while broadcasters < int(self.number_of_lamps/2):
             assignment = random.randint(0, self.number_of_lamps-1)
-            if choice[assignment] == "x":
-                choice[assignment] = -1
+            if channel[assignment] == "x":
+                channel[assignment] = -1
                 broadcasters += 1
-        print choice
+                broadcast_lamps.append(assignment)
+        print channel
+        print broadcast_lamps
 
         for i in range(self.number_of_lamps):
-            if choice[i] == "x":
-                while choice[i] == "x":
-                    assignment = random.randint(0, self.number_of_lamps-1)
-                    if assignment != i and choice[assignment] == -1:
-                        choice[i] = assignment
-            else:
-                pass
-
-        print choice
+            if channel[i] == "x":
+                while channel[i] == "x":
+                    if not broadcast_lamps:
+                        channel[i] = assignment
+                    else:
+                        assignment = random.choice(broadcast_lamps)
+                        channel[i] = assignment
+                        broadcast_lamps.remove(assignment)
+        print channel
 
     def set_listen(self):
         i = 0
