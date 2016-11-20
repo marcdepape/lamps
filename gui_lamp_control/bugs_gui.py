@@ -1,16 +1,19 @@
 import json
-from time import sleep, clock
+from time import sleep, clock, time, strftime
 from threading import Thread
+import random
 from bugs_proxy_sub_pub import LampProxy
 
 # KIVY setup
 from kivy.app import App
 from kivy.uix.widget import Widget
 from kivy.uix.label import Label
-from kivy.properties import StringProperty
+from kivy.uix.button import Button
+from kivy.properties import StringProperty, ObjectProperty
+from kivy.uix.gridlayout import GridLayout
 from kivy.clock import Clock
 
-class BugsDashboard(Widget):
+class BugsDashboard(GridLayout):
     number_of_lamps = 4
 
     lamp1_broadcast = StringProperty()
@@ -34,12 +37,19 @@ class BugsDashboard(Widget):
     lamp4_ip = StringProperty()
 
     timer = 0
+    start_time = time()
+    current_time = StringProperty()
+
+    listen_ids = [[0 for i in range(number_of_lamps)] for i in range(number_of_lamps)]
 
     def __init__(self, **kwargs):
         super(BugsDashboard, self).__init__(**kwargs)
+
         self.proxy = LampProxy()
         self.start_proxy()
         Clock.schedule_interval(self.update_GUI, 0.01)
+
+        self.set_listen()
 
     def start_proxy(self):
         p = Thread(name='proxy', target=self.proxy.start)
@@ -49,6 +59,11 @@ class BugsDashboard(Widget):
     def update_GUI(self, rt):
         update = json.loads(self.proxy.message)
         lamp = update["lamp"]
+
+        m, s = divmod((int(time()) - int(self.start_time)), 60)
+        h, m = divmod(m, 60)
+        self.current_time = "%d:%02d:%02d" % (h, m, s)
+
         if lamp == 1:
             self.lamp1_broadcast = str(update["broadcast"])
             self.lamp1_listen = str(update["listen"])
@@ -69,16 +84,56 @@ class BugsDashboard(Widget):
             self.lamp4_listen = str(update["listen"])
             self.lamp4_position = str(update["position"])
             self.lamp4_ip = str(update["ip"][lamp-1])
-        self.update_lamp_properties(update)
+        #self.update_lamp_properties(update)
 
     def update_lamp_properties(self, update):
-        print clock()
         if clock() - self.timer > 2.0:
             for l in range(0, self.number_of_lamps):
                 self.proxy.to_lamp[l] = 1
             self.timer = clock()
 
+    def change_listen(self, lamp, to_lamp):
+        self.assign_listeners(lamp, to_lamp)
+        self.listen_ids[lamp-1][to_lamp-1].state = "down"
+        self.proxy.to_lamp[lamp-1] = to_lamp
 
+
+    def assign_listeners(self, lamp, to_lamp):
+        channel = ["x" for i in range(self.number_of_lamps)]
+        print channel
+        broadcast_lamps = []
+        broadcasters = 0
+
+        channel[to_lamp-1] = -1
+        broadcast_lamps.append(to_lamp-1)
+        channel[lamp-1] = to_lamp-1
+        broadcasters += 1
+
+        while broadcasters < int(self.number_of_lamps/2):
+            assignment = random.randint(0, self.number_of_lamps-1)
+            if channel[assignment] == "x":
+                channel[assignment] = -1
+                broadcasters += 1
+                broadcast_lamps.append(assignment)
+        print channel
+        print broadcast_lamps
+
+        for i in range(self.number_of_lamps):
+            if channel[i] == "x":
+                while channel[i] == "x":
+                    if not broadcast_lamps:
+                        channel[i] = assignment
+                    else:
+                        assignment = random.choice(broadcast_lamps)
+                        channel[i] = assignment
+                        broadcast_lamps.remove(assignment)
+        print channel
+
+    def set_listen(self):
+        i = 0
+        for key in self.ids.items():
+            this_id = str(key[0]).split("_")
+            self.listen_ids[int(this_id[1])-1][int(this_id[3])-1] = key[1]
 
 class BugsApp(App):
     def build(self):
