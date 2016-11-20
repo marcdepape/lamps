@@ -50,7 +50,7 @@ class BugsDashboard(GridLayout):
         self.proxy = LampProxy()
         self.start_proxy()
         Clock.schedule_interval(self.update_GUI, 0.01)
-        Clock.schedule_interval(self.shuffle, 10)
+        Clock.schedule_interval(self.shuffle, 60)
 
         self.get_ids()
 
