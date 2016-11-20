@@ -1,88 +1,210 @@
 <BugsDashboard>
 	GridLayout:
-		cols: 5
+		cols: 6
 		size: root.size
 
-		# Lamp 1
-		Label:
-			id: lamp1
-			text: "ONE"
+		Label
+			text: "BUGS DASHBOARD"
+
+		Label
+			text: root.current_time
+
+		Label
+			text: "VOLUME"
+
+		Label
+			text: ""
+
+		Label
+			text: ""
+
+		Label
+			text: ""
+
+		# HEADINGS
 
 		Label:
-			id: broadcast1
-			text: root.lamp1_broadcast
+			text: "LAMP"
 
 		Label:
-			id: listen1
-			text: root.lamp1_listen
+			text: "IP ADDRESS"
 
 		Label:
-			id: position1
+			text: "POSITION"
+
+		Label:
+			text: "STATUS"
+
+		Label:
+			text: "BROADCAST"
+
+		Label:
+			text: "LISTEN"
+
+		#Lamp1
+		Label:
+			text: "1"
+
+		Label:
+			text: root.lamp1_ip
+
+		Label:
 			text: root.lamp1_position
 
 		Label:
-			id: ip1
-			text: root.lamp1_ip
+			text: "PINGS"
 
-		# Lamp 2
+		ToggleButton:
+			text: root.lamp1_broadcast
+
+        GridLayout:
+            cols: 2
+            ToggleButton
+				id: lamp_1_to_1
+                text: '1'
+				group: 'listen1'
+				state: 'normal'
+                on_press: root.change_listen(1,1)
+            ToggleButton
+				id: lamp_1_to_2
+                text: '2'
+				group: 'listen1'
+                on_press: root.change_listen(1,2)
+            ToggleButton
+				id: lamp_1_to_3
+                text: '3'
+				group: 'listen1'
+				state: 'normal'
+                on_press: root.change_listen(1,3)
+            ToggleButton
+				id: lamp_1_to_4
+                text: '4'
+				group: 'listen1'
+				state: 'normal'
+                on_press: root.change_listen(1,4)
+
+		#Lamp2
 		Label:
-			id: lamp2
-			text: "TWO"
+			text: "2"
 
 		Label:
-			id: broadcast2
-			text: root.lamp2_broadcast
+			text: root.lamp2_ip
 
 		Label:
-			id: listen2
-			text: root.lamp2_listen
-
-		Label:
-			id: position2
 			text: root.lamp2_position
 
 		Label:
-			id: ip2
-			text: root.lamp2_ip
+			text: "PINGS"
 
-		# Lamp 3
+		ToggleButton:
+			text: root.lamp2_broadcast
+
+        GridLayout:
+            cols: 2
+            ToggleButton
+				id: lamp_2_to_1
+                text: '1'
+				group: 'listen2'
+				state: 'normal'
+                on_press: root.change_listen(2,1)
+            ToggleButton
+				id: lamp_2_to_2
+                text: '2'
+				group: 'listen2'
+                on_press: root.change_listen(2,2)
+            ToggleButton
+				id: lamp_2_to_3
+                text: '3'
+				group: 'listen2'
+				state: 'normal'
+                on_press: root.change_listen(2,3)
+            ToggleButton
+				id: lamp_2_to_4
+                text: '4'
+				group: 'listen2'
+				state: 'normal'
+                on_press: root.change_listen(2,4)
+
+		#Lamp3
 		Label:
-			id: lamp3
-			text: "THREE"
+			text: "3"
 
 		Label:
-			id: broadcast3
-			text: root.lamp3_broadcast
+			text: root.lamp3_ip
 
 		Label:
-			id: listen3
-			text: root.lamp3_listen
-
-		Label:
-			id: position3
 			text: root.lamp3_position
 
 		Label:
-			id: ip3
-			text: root.lamp3_ip
+			text: "PINGS"
 
-		# Lamp 4
+		ToggleButton:
+			text: root.lamp3_broadcast
+
+        GridLayout:
+            cols: 2
+            ToggleButton
+				id: lamp_3_to_1
+                text: '1'
+				group: 'listen3'
+				state: 'normal'
+                on_press: root.change_listen(3,1)
+            ToggleButton
+				id: lamp_3_to_2
+                text: '2'
+				group: 'listen3'
+                on_press: root.change_listen(3,2)
+            ToggleButton
+				id: lamp_3_to_3
+                text: '3'
+				group: 'listen3'
+				state: 'normal'
+                on_press: root.change_listen(3,3)
+            ToggleButton
+				id: lamp_3_to_4
+                text: '4'
+				group: 'listen3'
+				state: 'normal'
+                on_press: root.change_listen(3,4)
+
+		#Lamp4
 		Label:
-			id: lamp4
-			text: "FOUR"
+			text: "4"
 
 		Label:
-			id: broadcast4
-			text: root.lamp4_broadcast
+			text: root.lamp4_ip
 
 		Label:
-			id: listen4
-			text: root.lamp4_listen
-
-		Label:
-			id: position4
 			text: root.lamp4_position
 
 		Label:
-			id: ip4
-			text: root.lamp4_ip
+			text: "PINGS"
+
+		ToggleButton:
+			text: root.lamp4_broadcast
+
+        GridLayout:
+            cols: 2
+            ToggleButton
+				id: lamp_4_to_1
+                text: '1'
+				group: 'listen4'
+				state: 'normal'
+                on_press: root.change_listen(4,1)
+            ToggleButton
+				id: lamp_4_to_2
+                text: '2'
+				group: 'listen4'
+                on_press: root.change_listen(4,2)
+            ToggleButton
+				id: lamp_4_to_3
+                text: '3'
+				group: 'listen4'
+				state: 'normal'
+                on_press: root.change_listen(4,3)
+            ToggleButton
+				id: lamp_4_to_4
+                text: '4'
+				group: 'listen4'
+				state: 'normal'
+                on_press: root.change_listen(4,4)
