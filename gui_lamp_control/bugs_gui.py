@@ -16,23 +16,15 @@ from kivy.clock import Clock
 class BugsDashboard(GridLayout):
     number_of_lamps = 4
 
-    lamp0_broadcast = StringProperty()
-    lamp0_listen = StringProperty()
     lamp0_position = StringProperty()
     lamp0_ip = StringProperty()
 
-    lamp1_broadcast = StringProperty()
-    lamp1_listen = StringProperty()
     lamp1_position = StringProperty()
     lamp1_ip = StringProperty()
 
-    lamp2_broadcast = StringProperty()
-    lamp2_listen = StringProperty()
     lamp2_position = StringProperty()
     lamp2_ip = StringProperty()
 
-    lamp3_broadcast = StringProperty()
-    lamp3_listen = StringProperty()
     lamp3_position = StringProperty()
     lamp3_ip = StringProperty()
 
@@ -46,13 +38,12 @@ class BugsDashboard(GridLayout):
 
     def __init__(self, **kwargs):
         super(BugsDashboard, self).__init__(**kwargs)
-
         self.proxy = LampProxy()
+        self.get_ids()
+        self.shuffle(0)
         self.start_proxy()
         Clock.schedule_interval(self.update_GUI, 0.01)
-        Clock.schedule_interval(self.shuffle, 60)
-
-        self.get_ids()
+        Clock.schedule_interval(self.shuffle, 5)
 
     def start_proxy(self):
         p = Thread(name='proxy', target=self.proxy.start)
@@ -61,32 +52,25 @@ class BugsDashboard(GridLayout):
 
     def update_GUI(self, rt):
         update = json.loads(self.proxy.message)
+        print update
         lamp = update["lamp"]
 
         m, s = divmod((int(time()) - int(self.start_time)), 60)
         h, m = divmod(m, 60)
         self.current_time = "%d:%02d:%02d" % (h, m, s)
 
-        if lamp == 1:
-            self.lamp1_broadcast = str(update["broadcast"])
-            self.lamp1_listen = str(update["listen"])
+        if lamp == 0:
+            self.lamp0_position = str(update["position"])
+            self.lamp0_ip = str(update["ip"][lamp])
+        elif lamp == 1:
             self.lamp1_position = str(update["position"])
-            self.lamp1_ip = str(update["ip"][lamp-1])
+            self.lamp1_ip = str(update["ip"][lamp])
         elif lamp == 2:
-            self.lamp2_broadcast = str(update["broadcast"])
-            self.lamp2_listen = str(update["listen"])
             self.lamp2_position = str(update["position"])
-            self.lamp2_ip = str(update["ip"][lamp-1])
+            self.lamp2_ip = str(update["ip"][lamp])
         elif lamp == 3:
-            self.lamp3_broadcast = str(update["broadcast"])
-            self.lamp3_listen = str(update["listen"])
             self.lamp3_position = str(update["position"])
-            self.lamp3_ip = str(update["ip"][lamp-1])
-        elif lamp == 4:
-            self.lamp4_broadcast = str(update["broadcast"])
-            self.lamp4_listen = str(update["listen"])
-            self.lamp4_position = str(update["position"])
-            self.lamp4_ip = str(update["ip"][lamp-1])
+            self.lamp3_ip = str(update["ip"][lamp])
 
     def shuffle(self, rt):
         self.assign_listeners("x","x")
@@ -130,7 +114,7 @@ class BugsDashboard(GridLayout):
                 self.listen_ids[i][listeners[i]].state = "down"
 
         print listeners
-        #self.proxy.to_lamp[lamp] = to_lamp
+        self.proxy.listeners = listeners
 
     def get_ids(self):
         i = 0
