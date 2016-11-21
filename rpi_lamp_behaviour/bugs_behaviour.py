@@ -69,23 +69,37 @@ if __name__ == '__main__':
     sleep(3)
 
     old = setup()
-    ip = old["ip"]
 
     # LAMP STREAM
-    this_stream = LampStream(0.05, 1.0)
-    l = Thread(target=this_stream.start_stream, args=(old["ip"][old["listen"]-1],))
-    l.daemon = True
-    l.start()
+    this_stream = LampStream(old["rate"], old["peak"])
+    if old["listen"] != -1:
+        l = Thread(target=this_stream.start_stream, args=(old["ip"][old["listen"]],))
+        l.daemon = True
+        l.start()
+    else:
+        this_stream = None
 
     while True:
         new = lamp_update.receive()
         if new != -1:
             if new["listen"] != old["listen"]:
-                this_stream.stop_stream()
-                this_stream = None
-                this_stream = LampStream(0.05, 1.0)
-                l = Thread(target=this_stream.start_stream, args=(new["ip"][new["listen"]-1],))
-                l.daemon = True
-                l.start()
+                print "CHANGE TO {}".format(new["listen"])
+                if new["listen"] != -1 and old["listen"] != -1:
+                    this_stream.stop_stream()
+                    this_stream = None
+                    this_stream = LampStream(new["rate"], new["peak"])
+                    l = Thread(target=this_stream.start_stream, args=(new["ip"][new["listen"]],))
+                    l.daemon = True
+                    l.start()
+                elif new["listen"] != -1 and old["listen"] == -1:
+                    this_stream = LampStream(new["rate"], new["peak"])
+                    l = Thread(target=this_stream.start_stream, args=(new["ip"][new["listen"]],))
+                    l.daemon = True
+                    l.start()
+                elif new["listen"] == -1:
+                    this_stream.stop_stream()
+                    this_stream = None
+                else:
+                    pass
             position = check_lamp.update(new["broadcast"], new["position"])
             old = new

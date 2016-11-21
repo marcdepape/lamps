@@ -4,13 +4,13 @@
 		size: root.size
 
 		Label
-			text: "BUGS DASHBOARD"
+			text: "BUGS"
 
 		Label
 			text: root.current_time
 
 		Label
-			text: "VOLUME"
+			text: root.current_peak
 
 		Label
 			text: ""
@@ -59,6 +59,7 @@
 		ToggleButton:
 			id: broadcast_0
 			state: 'normal'
+			on_press: root.assign_listeners("x",0)
 
         GridLayout:
             cols: 2
@@ -101,6 +102,7 @@
 		ToggleButton:
 			id: broadcast_1
 			state: 'normal'
+			on_press: root.assign_listeners("x",1)
 
         GridLayout:
             cols: 2
@@ -143,6 +145,7 @@
 		ToggleButton:
 			id: broadcast_2
 			state: 'normal'
+			on_press: root.assign_listeners("x",2)
 
         GridLayout:
             cols: 2
@@ -185,6 +188,7 @@
 		ToggleButton:
 			id: broadcast_3
 			state: 'normal'
+			on_press: root.assign_listeners("x",3)
 
         GridLayout:
             cols: 2

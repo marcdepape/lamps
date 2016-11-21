@@ -31,6 +31,7 @@ class BugsDashboard(GridLayout):
     timer = 0
     start_time = time()
     current_time = StringProperty()
+    current_peak = StringProperty()
 
     listen_ids = [[0 for i in range(number_of_lamps)] for i in range(number_of_lamps)]
     broadcast_ids = [0 for i in range(number_of_lamps)]
@@ -43,7 +44,7 @@ class BugsDashboard(GridLayout):
         self.shuffle(0)
         self.start_proxy()
         Clock.schedule_interval(self.update_GUI, 0.01)
-        Clock.schedule_interval(self.shuffle, 5)
+        Clock.schedule_interval(self.shuffle, 20)
 
     def start_proxy(self):
         p = Thread(name='proxy', target=self.proxy.start)
@@ -58,6 +59,8 @@ class BugsDashboard(GridLayout):
         m, s = divmod((int(time()) - int(self.start_time)), 60)
         h, m = divmod(m, 60)
         self.current_time = "%d:%02d:%02d" % (h, m, s)
+
+        self.current_peak = str(self.proxy.peak)
 
         if lamp == 0:
             self.lamp0_position = str(update["position"])
