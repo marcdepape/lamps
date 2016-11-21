@@ -12,7 +12,7 @@ class PingLamps(object):
     def keep_live(self):
         #print "PING_ALL: " + str(self.addresses)
         for ping in range(0,len(self.addresses)):
-            if ping != self.this_lamp-1:
+            if ping != self.this_lamp:
                 if self.addresses[ping] != -1:
                     check = True
                     while check:

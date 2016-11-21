@@ -3,7 +3,7 @@ import zmq
 import json
 
 class LampSubPub(object):
-    def __init__(self, lamp_ip, this_lamp,):
+    def __init__(self, lamp_ip, this_lamp):
         # SERVER
         server_context = zmq.Context()
         self.server = server_context.socket(zmq.PUB)
@@ -39,4 +39,3 @@ class LampSubPub(object):
             return self.in_update
         else:
             return -1
-            pass

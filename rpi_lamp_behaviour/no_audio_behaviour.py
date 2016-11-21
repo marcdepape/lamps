@@ -90,7 +90,7 @@ def lamp_status(threadName):
 def ping_all_lamps(addresses):
     #print addresses
     for ping in range(0,len(addresses)):
-        if ping != this_lamp-1:
+        if ping != this_lamp:
             if addresses[ping] != -1:
                 check = True
                 while check:
@@ -100,10 +100,10 @@ def ping_all_lamps(addresses):
                         res = res[1].split(" ")
                         status = res[1]
                         status = int(status)
-                        #print "ping to Lamp" + str(ping + 1), addresses[ping], "OK"
+                        #print "ping to Lamp" + str(ping), addresses[ping], "OK"
                         check = False
                     except subprocess.CalledProcessError as e:
-                        #print "no response from Lamp" + str(ping + 1), addresses[ping]
+                        #print "no response from Lamp" + str(ping), addresses[ping]
                         check = True
 
 def ping_forever(threadName):

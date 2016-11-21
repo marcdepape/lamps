@@ -13,6 +13,8 @@ class LampStream(object):
         self.stream = Gst.parse_launch(stream_pipeline)
         self.playing = False
         self.volume = 0.0
+        self.fading_in = False
+        self.fading_out = False
         self.peak = peak
         self.rate = rate
 
@@ -43,24 +45,29 @@ class LampStream(object):
         self.fade("out")
         self.lamp_stream.terminate()
         self.is_live = False
+        print "STOPPED!"
 
     def fade(self, inOut):
         if inOut == "in":
-            #print "FADE IN!"
+            print "FADE IN!"
             #print "CURRENT VOLUME: " + str(self.volume)
-            while self.volume < self.peak:
+            self.fading_in = True
+            while self.volume < self.peak and self.fading_out != True:
                 self.volume = self.volume + 0.01
                 self.vol.put(self.volume)
                 sleep(self.rate)
-            #print "END VOLUME: " + str(self.volume)
+            self.fading_in = False
+            print "END VOLUME: " + str(self.volume)
         elif inOut == "out":
-            #print "FADE OUT!"
+            print "FADE OUT!"
             #print "CURRENT VOLUME: " + str(self.volume)
-            while self.volume > 0.01:
+            self.fading_out = True
+            while self.volume > 0.01 and self.fading_in != True:
                 self.volume = self.volume - 0.01
                 self.vol.put(self.volume)
                 sleep(self.rate)
-            #print "END VOLUME: " + str(self.volume)
+            self.fading_out = False
+            print "END VOLUME: " + str(self.volume)
         else:
             pass
 

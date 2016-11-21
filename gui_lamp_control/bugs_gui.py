@@ -16,40 +16,35 @@ from kivy.clock import Clock
 class BugsDashboard(GridLayout):
     number_of_lamps = 4
 
-    lamp1_broadcast = StringProperty()
-    lamp1_listen = StringProperty()
+    lamp0_position = StringProperty()
+    lamp0_ip = StringProperty()
+
     lamp1_position = StringProperty()
     lamp1_ip = StringProperty()
 
-    lamp2_broadcast = StringProperty()
-    lamp2_listen = StringProperty()
     lamp2_position = StringProperty()
     lamp2_ip = StringProperty()
 
-    lamp3_broadcast = StringProperty()
-    lamp3_listen = StringProperty()
     lamp3_position = StringProperty()
     lamp3_ip = StringProperty()
-
-    lamp4_broadcast = StringProperty()
-    lamp4_listen = StringProperty()
-    lamp4_position = StringProperty()
-    lamp4_ip = StringProperty()
 
     timer = 0
     start_time = time()
     current_time = StringProperty()
+    current_peak = StringProperty()
 
     listen_ids = [[0 for i in range(number_of_lamps)] for i in range(number_of_lamps)]
+    broadcast_ids = [0 for i in range(number_of_lamps)]
+    status_ids = [0 for i in range(number_of_lamps)]
 
     def __init__(self, **kwargs):
         super(BugsDashboard, self).__init__(**kwargs)
-
         self.proxy = LampProxy()
+        self.get_ids()
+        self.shuffle(0)
         self.start_proxy()
         Clock.schedule_interval(self.update_GUI, 0.01)
-
-        self.set_listen()
+        Clock.schedule_interval(self.shuffle, 20)
 
     def start_proxy(self):
         p = Thread(name='proxy', target=self.proxy.start)
@@ -58,82 +53,82 @@ class BugsDashboard(GridLayout):
 
     def update_GUI(self, rt):
         update = json.loads(self.proxy.message)
+        print update
         lamp = update["lamp"]
 
         m, s = divmod((int(time()) - int(self.start_time)), 60)
         h, m = divmod(m, 60)
         self.current_time = "%d:%02d:%02d" % (h, m, s)
 
-        if lamp == 1:
-            self.lamp1_broadcast = str(update["broadcast"])
-            self.lamp1_listen = str(update["listen"])
+        self.current_peak = str(self.proxy.peak)
+
+        if lamp == 0:
+            self.lamp0_position = str(update["position"])
+            self.lamp0_ip = str(update["ip"][lamp])
+        elif lamp == 1:
             self.lamp1_position = str(update["position"])
-            self.lamp1_ip = str(update["ip"][lamp-1])
+            self.lamp1_ip = str(update["ip"][lamp])
         elif lamp == 2:
-            self.lamp2_broadcast = str(update["broadcast"])
-            self.lamp2_listen = str(update["listen"])
             self.lamp2_position = str(update["position"])
-            self.lamp2_ip = str(update["ip"][lamp-1])
+            self.lamp2_ip = str(update["ip"][lamp])
         elif lamp == 3:
-            self.lamp3_broadcast = str(update["broadcast"])
-            self.lamp3_listen = str(update["listen"])
             self.lamp3_position = str(update["position"])
-            self.lamp3_ip = str(update["ip"][lamp-1])
-        elif lamp == 4:
-            self.lamp4_broadcast = str(update["broadcast"])
-            self.lamp4_listen = str(update["listen"])
-            self.lamp4_position = str(update["position"])
-            self.lamp4_ip = str(update["ip"][lamp-1])
-        #self.update_lamp_properties(update)
+            self.lamp3_ip = str(update["ip"][lamp])
 
-    def update_lamp_properties(self, update):
-        if clock() - self.timer > 2.0:
-            for l in range(0, self.number_of_lamps):
-                self.proxy.to_lamp[l] = 1
-            self.timer = clock()
-
-    def change_listen(self, lamp, to_lamp):
-        self.assign_listeners(lamp, to_lamp)
-        self.listen_ids[lamp-1][to_lamp-1].state = "down"
-        self.proxy.to_lamp[lamp-1] = to_lamp
-
+    def shuffle(self, rt):
+        self.assign_listeners("x","x")
 
     def assign_listeners(self, lamp, to_lamp):
-        channel = ["x" for i in range(self.number_of_lamps)]
-        print channel
+        listeners = ["x" for i in range(self.number_of_lamps)]
         broadcast_lamps = []
         broadcasters = 0
 
-        channel[to_lamp-1] = -1
-        broadcast_lamps.append(to_lamp-1)
-        channel[lamp-1] = to_lamp-1
-        broadcasters += 1
+        if lamp != "x":
+            listeners[lamp] = to_lamp
+            listeners[to_lamp] = -1
+            broadcasters += 1
 
         while broadcasters < int(self.number_of_lamps/2):
             assignment = random.randint(0, self.number_of_lamps-1)
-            if channel[assignment] == "x":
-                channel[assignment] = -1
+            if listeners[assignment] == "x":
+                listeners[assignment] = -1
                 broadcasters += 1
                 broadcast_lamps.append(assignment)
-        print channel
-        print broadcast_lamps
 
         for i in range(self.number_of_lamps):
-            if channel[i] == "x":
-                while channel[i] == "x":
+            if listeners[i] == "x":
+                while listeners[i] == "x":
                     if not broadcast_lamps:
-                        channel[i] = assignment
+                        listeners[i] = assignment
                     else:
                         assignment = random.choice(broadcast_lamps)
-                        channel[i] = assignment
+                        listeners[i] = assignment
                         broadcast_lamps.remove(assignment)
-        print channel
 
-    def set_listen(self):
+        for i in range(self.number_of_lamps):
+            self.broadcast_ids[i].state = "normal"
+            for j in range(self.number_of_lamps):
+                self.listen_ids[i][j].state = "normal"
+
+        for i in range(self.number_of_lamps):
+            if listeners[i] == -1:
+                self.broadcast_ids[i].state = "down"
+            else:
+                self.listen_ids[i][listeners[i]].state = "down"
+
+        print listeners
+        self.proxy.listeners = listeners
+
+    def get_ids(self):
         i = 0
         for key in self.ids.items():
             this_id = str(key[0]).split("_")
-            self.listen_ids[int(this_id[1])-1][int(this_id[3])-1] = key[1]
+            if this_id[0] == "listen":
+                self.listen_ids[int(this_id[1])][int(this_id[3])] = key[1]
+            if this_id[0] == "broadcast":
+                self.broadcast_ids[int(this_id[1])] = key[1]
+            if this_id[0] == "status":
+                self.status_ids[int(this_id[1])] = key[1]
 
 class BugsApp(App):
     def build(self):
