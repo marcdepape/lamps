@@ -31,9 +31,10 @@ class LampProxy(object):
         self.lamp_ip = [-1,-1,-1,-1]
         self.listeners = [-1,-1,-1,-1]
         self.broadcast = [-1,-1,-1,-1]
+        self.log = "waiting..."
         self.receive = ""
         self.live = 0
-        self.message = json.dumps({"ip": -1, "lamp": -1, "rate": self.rate, "peak": self.peak, "live": -1, "position": -1, "listen": -1, "broadcast": -1}, sort_keys=True)
+        self.message = json.dumps({"ip": -1, "lamp": -1, "rate": self.rate, "peak": self.peak, "live": -1, "position": -1, "listen": -1, "broadcast": -1, "console": self.log}, sort_keys=True)
 
     def stop(self):
         self.running = False
@@ -44,7 +45,10 @@ class LampProxy(object):
             self.receive = self.frontend.recv_json()
             self.receive = json.loads(self.receive)
             lamp = self.receive["lamp"]
-            self.message = json.dumps({"ip": self.lamp_ip, "lamp": lamp, "rate": self.rate, "peak": self.peak, "live": self.live, "position": self.position[lamp], "listen": self.listeners[lamp], "broadcast": -1}, sort_keys=True)
+            log = ""
+            if "console" in self.receive:
+                log = self.receive["console"]
+            self.message = json.dumps({"ip": self.lamp_ip, "lamp": lamp, "rate": self.rate, "peak": self.peak, "live": self.live, "position": self.position[lamp], "listen": self.listeners[lamp], "broadcast": -1, "console": log}, sort_keys=True)
             self.backend.send_json(self.message)
 
     def setup(self):

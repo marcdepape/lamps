@@ -18,15 +18,19 @@ class BugsDashboard(GridLayout):
 
     lamp0_position = StringProperty()
     lamp0_ip = StringProperty()
+    lamp0_console = StringProperty()
 
     lamp1_position = StringProperty()
     lamp1_ip = StringProperty()
+    lamp1_console = StringProperty()
 
     lamp2_position = StringProperty()
     lamp2_ip = StringProperty()
+    lamp2_console = StringProperty()
 
     lamp3_position = StringProperty()
     lamp3_ip = StringProperty()
+    lamp3_console = StringProperty()
 
     timer = 0
     start_time = time()
@@ -65,6 +69,7 @@ class BugsDashboard(GridLayout):
         if lamp == 0:
             self.lamp0_position = str(update["position"])
             self.lamp0_ip = str(update["ip"][lamp])
+            self.lamp0_console = str(update["console"])
         elif lamp == 1:
             self.lamp1_position = str(update["position"])
             self.lamp1_ip = str(update["ip"][lamp])
