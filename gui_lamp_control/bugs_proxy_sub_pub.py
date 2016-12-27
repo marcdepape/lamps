@@ -26,7 +26,7 @@ class LampProxy(object):
 
         # MESSAGE KEYS
         self.rate = 0.025
-        self.peak = 1.0
+        self.peak = 0.25
         self.position = [-1,-1,-1,-1]
         self.lamp_ip = [-1,-1,-1,-1]
         self.listeners = [-1,-1,-1,-1]
@@ -55,6 +55,7 @@ class LampProxy(object):
         while self.live != 1:
             self.receive = self.frontend.recv_json()
             self.receive = json.loads(self.receive)
+            print self.receive
             self.lamp_ip[self.receive["lamp"]] = self.receive["ip"]
 
             num = 0

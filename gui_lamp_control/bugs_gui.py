@@ -57,7 +57,7 @@ class BugsDashboard(GridLayout):
 
     def update_GUI(self, rt):
         update = json.loads(self.proxy.message)
-        print update
+        #print update
         lamp = update["lamp"]
 
         m, s = divmod((int(time()) - int(self.start_time)), 60)
