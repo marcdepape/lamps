@@ -2,3 +2,5 @@
 *.xml
 
 audio_control/.idea/pylamps.iml
+
+*.pyc
