@@ -5,6 +5,7 @@ from time import sleep
 import json
 import subprocess
 from threading import Thread
+from multiprocessing import Queue, Pipe
 from ping_all_lamps import PingLamps
 from check_status import CheckStatus
 from stream_control import LampStream
@@ -41,31 +42,58 @@ m.start()
 lamp_update = LampSubPub(lamp_ip,this_lamp)
 
 def setup():
-    print "SETUP!"
+    print "SETING UP LAMPS..."
     while True:
         intro = lamp_update.receive()
         if intro != -1:
             if intro["live"] == 1:
                 ping_all.update(intro["ip"])
+                print "ALL LAMPS READY!"
                 return intro
         else:
             pass
 
+class ConsoleLog(object):
+    def __init__(self):
+        self.stream = None
+
+    def set(self, stream):
+        self.stream = stream
+    def console(self, q):
+        log = ""
+        q.put("...")
+        while True:
+            ready = q.get()
+            if ready == "READY":
+                if self.stream != None:
+                    log = str(self.stream.status())
+                else:
+                    log = "BROADCASTING"
+            else:
+                pass
+            q.put(log)
+
+monitor = ConsoleLog()
+
 #---------------------------------------------------------------------------------------------
 # THREADS
+q = Queue()
 p = Thread(name='ping_all_other_lamps', target=ping_all.forever)
 l = Thread(name='check_lamp_atmega', target=check_lamp.forever)
-s = Thread(name='lamp_server', target=lamp_update.send)
+s = Thread(name='lamp_server', target=lamp_update.send, args=(q,))
+c = Thread(name='console', target=monitor.console, args=(q,))
 
 # SET THREADS
 p.daemon = True
 l.daemon = True
 s.daemon = True
+c.daemon = True
 
 if __name__ == '__main__':
     p.start()
     l.start()
     s.start()
+    c.start()
     sleep(3)
 
     old = setup()
@@ -83,7 +111,6 @@ if __name__ == '__main__':
         new = lamp_update.receive()
         if new != -1:
             if new["listen"] != old["listen"]:
-                print "CHANGE TO {}".format(new["listen"])
                 if new["listen"] != -1 and old["listen"] != -1:
                     this_stream.stop_stream()
                     this_stream = None
@@ -91,14 +118,17 @@ if __name__ == '__main__':
                     l = Thread(target=this_stream.start_stream, args=(new["ip"][new["listen"]],))
                     l.daemon = True
                     l.start()
+                    monitor.set(this_stream)
                 elif new["listen"] != -1 and old["listen"] == -1:
                     this_stream = LampStream(new["rate"], new["peak"])
                     l = Thread(target=this_stream.start_stream, args=(new["ip"][new["listen"]],))
                     l.daemon = True
                     l.start()
+                    monitor.set(this_stream)
                 elif new["listen"] == -1:
                     this_stream.stop_stream()
                     this_stream = None
+                    monitor.set(this_stream)
                 else:
                     pass
             position = check_lamp.update(new["broadcast"], new["position"])

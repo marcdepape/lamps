@@ -22,14 +22,17 @@ class LampSubPub(object):
         self.lamp_ip = lamp_ip
         self.this_lamp = this_lamp
         self.position = 0
-        self.out_update = json.dumps({"ip": self.lamp_ip,"lamp": self.this_lamp, "position": self.position}, sort_keys=True)
+        self.console = "waiting..."
+        self.out_update = json.dumps({"ip": self.lamp_ip,"lamp": self.this_lamp, "position": self.position, "console": self.console}, sort_keys=True)
         self.in_update = ""
 
-    def send(self):
+    def send(self, q):
         while True:
-            self.out_update = json.dumps({"ip": self.lamp_ip,"lamp": self.this_lamp, "position": self.position}, sort_keys=True)
+            self.console = str(q.get())
+            self.out_update = json.dumps({"ip": self.lamp_ip,"lamp": self.this_lamp, "position": self.position, "console": self.console}, sort_keys=True)
             self.server.send_json(self.out_update)
-            sleep(0.1)
+            q.put("READY")
+            sleep(0.05)
 
     def receive(self):
         update = self.client.recv_json()
