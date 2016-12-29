@@ -15,7 +15,7 @@ class LampStream(object):
         self.volume = 0.0
         self.fading_in = False
         self.fading_out = False
-        self.peak = peak
+        self.peak = float(peak)
         self.rate = rate
         self.current = ""
         self.log = ["","","","","Starting stream..."]
@@ -96,9 +96,9 @@ class LampStream(object):
             info = str(info[0]).split(" ")
             print info[1]
             while info[1] == "GST_STATE_CHANGE_ASYNC":
+                self.status("ASYNC...")
                 info = self.stream.get_state(0)
                 info = str(info[0]).split(" ")
-                self.status("ASYNC...")
             if info[1] == "GST_STATE_CHANGE_SUCCESS":
                 print info[1]
                 self.status("SUCCESS")
@@ -106,7 +106,7 @@ class LampStream(object):
                 self.play.put(self.playing)
             else:
                 print info[1]
-                self.status(str(info[1]))
+                self.status("FAILURE")
                 self.stream.set_state(Gst.State.NULL)
 
         while self.playing == True:

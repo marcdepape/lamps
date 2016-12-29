@@ -4,6 +4,7 @@ import gi
 from time import sleep
 import json
 import subprocess
+import sys, traceback
 from threading import Thread
 from multiprocessing import Queue, Pipe
 from ping_all_lamps import PingLamps
@@ -123,6 +124,8 @@ if __name__ == '__main__':
     while True:
         new = lamp_update.receive()
         if new != -1:
+            if new["exit"] == 1:
+                sys.exit(0)
             if new["listen"] != old["listen"]:
                 if new["listen"] != -1 and old["listen"] != -1:
                     this_stream.stop_stream()
@@ -148,5 +151,5 @@ if __name__ == '__main__':
 
                 else:
                     pass
-            position = check_lamp.update(new["broadcast"], new["position"])
+            position = check_lamp.update(new["listen"], new["position"])
             old = new

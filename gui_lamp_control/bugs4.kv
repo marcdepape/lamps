@@ -10,16 +10,51 @@
 			text: root.current_time
 
 		Label
-			text: root.current_peak
-
-		Label
 			text: ""
 
-		Label
-			text: ""
+		GridLayout:
+			rows:2
+			Slider:
+	            id: s1
+	            size_hint_x: None
+	            orientation: 'horizontal'
+				min: 0.25
+				max: 1.5
+				step: 0.01
+	            value: s1.value
+	            on_value: root.set_peak(self.value)
+			Label:
+	            text: '{}'.format(s1.value)
+
+		GridLayout:
+            cols: 2
+            ToggleButton:
+				id: all_0
+                text: '0'
+				group: 'all0'
+				state: 'normal'
+                on_press: root.all_streaming_one(0)
+			ToggleButton:
+				id: all_1
+                text: '1'
+				group: 'all1'
+				state: 'normal'
+                on_press: root.all_streaming_one(1)
+			ToggleButton:
+				id: all_2
+                text: '2'
+				group: 'all2'
+				state: 'normal'
+                on_press: root.all_streaming_one(2)
+			ToggleButton:
+				id: all_3
+                text: '3'
+				group: 'all3'
+				state: 'normal'
+                on_press: root.all_streaming_one(3)
 
 		Label
-			text: ""
+			text: "RESET"
 
 		# HEADINGS
 
@@ -59,7 +94,7 @@
 				height: 1
 				canvas:
 					Color:
-						rgb: 0.5,0.5,0.5
+						rgba: 0.5,0.5,0.5,1
 					Rectangle:
 						pos: separator.x, separator.y
 						size: separator.width, 1
@@ -88,7 +123,6 @@
 				text: root.lamp0_log_4
 				color: 0.6,0.8,0.4,1
 				font_size: 12
-
 
 		ToggleButton:
 			id: broadcast_0
@@ -129,9 +163,43 @@
 		Label:
 			text: root.lamp1_position
 
-		Label:
-			id: log_1
-			text: root.lamp1_console
+		GridLayout:
+			rows: 6
+			Widget:
+				id: separator
+				size_hint_y: None
+				height: 1
+				canvas:
+					Color:
+						rgba: 0.5,0.5,0.5,1
+					Rectangle:
+						pos: separator.x, separator.y
+						size: separator.width, 1
+			Label:
+				id: log_1_message_0
+				text: root.lamp1_log_0
+				color: 0.5,0.5,0.5,1
+				font_size: 12
+			Label:
+				id: log_1_message_1
+				text: root.lamp1_log_1
+				color: 0.5,0.5,0.5,1
+				font_size: 12
+			Label:
+				id: log_1_message_2
+				text: root.lamp1_log_2
+				color: 0.5,0.5,0.5,1
+				font_size: 12
+			Label:
+				id: log_1_message_3
+				text: root.lamp1_log_3
+				color: 0.5,0.5,0.5,1
+				font_size: 12
+			Label:
+				id: log_1_message_4
+				text: root.lamp1_log_4
+				color: 0.6,0.8,0.4,1
+				font_size: 12
 
 		ToggleButton:
 			id: broadcast_1
@@ -172,9 +240,43 @@
 		Label:
 			text: root.lamp2_position
 
-		Label:
-			id: log_2
-			text: root.lamp2_console
+		GridLayout:
+			rows: 6
+			Widget:
+				id: separator
+				size_hint_y: None
+				height: 1
+				canvas:
+					Color:
+						rgba: 0.5,0.5,0.5,1
+					Rectangle:
+						pos: separator.x, separator.y
+						size: separator.width, 1
+			Label:
+				id: log_2_message_0
+				text: root.lamp2_log_0
+				color: 0.5,0.5,0.5,1
+				font_size: 12
+			Label:
+				id: log_2_message_1
+				text: root.lamp2_log_1
+				color: 0.5,0.5,0.5,1
+				font_size: 12
+			Label:
+				id: log_2_message_2
+				text: root.lamp2_log_2
+				color: 0.5,0.5,0.5,1
+				font_size: 12
+			Label:
+				id: log_2_message_3
+				text: root.lamp2_log_3
+				color: 0.5,0.5,0.5,1
+				font_size: 12
+			Label:
+				id: log_2_message_4
+				text: root.lamp2_log_4
+				color: 0.6,0.8,0.4,1
+				font_size: 12
 
 		ToggleButton:
 			id: broadcast_2
@@ -215,9 +317,43 @@
 		Label:
 			text: root.lamp3_position
 
-		Label:
-			id: log_3
-			text: root.lamp3_console
+		GridLayout:
+			rows: 6
+			Widget:
+				id: separator
+				size_hint_y: None
+				height: 1
+				canvas:
+					Color:
+						rgba: 0.5,0.5,0.5,1
+					Rectangle:
+						pos: separator.x, separator.y
+						size: separator.width, 1
+			Label:
+				id: log_3_message_0
+				text: root.lamp3_log_0
+				color: 0.5,0.5,0.5,1
+				font_size: 12
+			Label:
+				id: log_3_message_1
+				text: root.lamp3_log_1
+				color: 0.5,0.5,0.5,1
+				font_size: 12
+			Label:
+				id: log_3_message_2
+				text: root.lamp3_log_2
+				color: 0.5,0.5,0.5,1
+				font_size: 12
+			Label:
+				id: log_3_message_3
+				text: root.lamp3_log_3
+				color: 0.5,0.5,0.5,1
+				font_size: 12
+			Label:
+				id: log_3_message_4
+				text: root.lamp3_log_4
+				color: 0.6,0.8,0.4,1
+				font_size: 12
 
 		ToggleButton:
 			id: broadcast_3

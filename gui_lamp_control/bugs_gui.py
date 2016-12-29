@@ -13,9 +13,9 @@ from kivy.properties import StringProperty, ObjectProperty
 from kivy.uix.gridlayout import GridLayout
 from kivy.clock import Clock
 
-class BugsDashboard(GridLayout):
-    number_of_lamps = 4
+number_of_lamps = 5
 
+class BugsDashboard(GridLayout):
     lamp0_position = StringProperty()
     lamp0_ip = StringProperty()
     lamp0_log_0 = StringProperty()
@@ -26,33 +26,64 @@ class BugsDashboard(GridLayout):
 
     lamp1_position = StringProperty()
     lamp1_ip = StringProperty()
-    lamp1_console = StringProperty()
+    lamp1_log_0 = StringProperty()
+    lamp1_log_1 = StringProperty()
+    lamp1_log_2 = StringProperty()
+    lamp1_log_3 = StringProperty()
+    lamp1_log_4 = StringProperty()
 
     lamp2_position = StringProperty()
     lamp2_ip = StringProperty()
-    lamp2_console = StringProperty()
+    lamp2_log_0 = StringProperty()
+    lamp2_log_1 = StringProperty()
+    lamp2_log_2 = StringProperty()
+    lamp2_log_3 = StringProperty()
+    lamp2_log_4 = StringProperty()
 
     lamp3_position = StringProperty()
     lamp3_ip = StringProperty()
-    lamp3_console = StringProperty()
+    lamp3_log_0 = StringProperty()
+    lamp3_log_1 = StringProperty()
+    lamp3_log_2 = StringProperty()
+    lamp3_log_3 = StringProperty()
+    lamp3_log_4 = StringProperty()
+
+    lamp4_position = StringProperty()
+    lamp4_ip = StringProperty()
+    lamp4_log_0 = StringProperty()
+    lamp4_log_1 = StringProperty()
+    lamp4_log_2 = StringProperty()
+    lamp4_log_3 = StringProperty()
+    lamp4_log_4 = StringProperty()
+
+    lamp5_position = StringProperty()
+    lamp5_ip = StringProperty()
+    lamp5_log_0 = StringProperty()
+    lamp5_log_1 = StringProperty()
+    lamp5_log_2 = StringProperty()
+    lamp5_log_3 = StringProperty()
+    lamp5_log_4 = StringProperty()
 
     timer = 0
     start_time = time()
     current_time = StringProperty()
     current_peak = StringProperty()
 
-    listen_ids = [[0 for i in range(number_of_lamps)] for i in range(number_of_lamps)]
-    broadcast_ids = [0 for i in range(number_of_lamps)]
-    status_ids = [[0 for i in range(number_of_lamps)] for i in range(5)]
-
-    def __init__(self, **kwargs):
+    def __init__(self, num, **kwargs):
         super(BugsDashboard, self).__init__(**kwargs)
-        self.proxy = LampProxy()
+
+        self.number_of_lamps = num
+        self.proxy = LampProxy(self.number_of_lamps)
+        self.listen_ids = [[0 for i in range(self.number_of_lamps)] for i in range(self.number_of_lamps)]
+        self.broadcast_ids = [0 for i in range(self.number_of_lamps)]
+        self.status_ids = [[0 for i in range(self.number_of_lamps)] for i in range(5)]
         self.get_ids()
         self.shuffle(0)
-        self.start_proxy()
+
         Clock.schedule_interval(self.update_GUI, 0.01)
         Clock.schedule_interval(self.shuffle, 20)
+
+        self.start_proxy()
 
     def start_proxy(self):
         p = Thread(name='proxy', target=self.proxy.start)
@@ -63,6 +94,7 @@ class BugsDashboard(GridLayout):
         update = json.loads(self.proxy.message)
         #print update
         lamp = update["lamp"]
+        logs = update["console"]
 
         m, s = divmod((int(time()) - int(self.start_time)), 60)
         h, m = divmod(m, 60)
@@ -73,7 +105,6 @@ class BugsDashboard(GridLayout):
         if lamp == 0:
             self.lamp0_position = str(update["position"])
             self.lamp0_ip = str(update["ip"][lamp])
-            logs = update["console"]
             self.lamp0_log_0 = logs[4]
             self.lamp0_log_1 = logs[3]
             self.lamp0_log_2 = logs[2]
@@ -82,14 +113,65 @@ class BugsDashboard(GridLayout):
         elif lamp == 1:
             self.lamp1_position = str(update["position"])
             self.lamp1_ip = str(update["ip"][lamp])
+            self.lamp1_log_0 = logs[4]
+            self.lamp1_log_1 = logs[3]
+            self.lamp1_log_2 = logs[2]
+            self.lamp1_log_3 = logs[1]
+            self.lamp1_log_4 = logs[0]
         elif lamp == 2:
             self.lamp2_position = str(update["position"])
             self.lamp2_ip = str(update["ip"][lamp])
+            self.lamp2_log_0 = logs[4]
+            self.lamp2_log_1 = logs[3]
+            self.lamp2_log_2 = logs[2]
+            self.lamp2_log_3 = logs[1]
+            self.lamp2_log_4 = logs[0]
         elif lamp == 3:
             self.lamp3_position = str(update["position"])
             self.lamp3_ip = str(update["ip"][lamp])
+            self.lamp3_log_0 = logs[4]
+            self.lamp3_log_1 = logs[3]
+            self.lamp3_log_2 = logs[2]
+            self.lamp3_log_3 = logs[1]
+            self.lamp3_log_4 = logs[0]
+        elif lamp == 4:
+            self.lamp4_position = str(update["position"])
+            self.lamp4_ip = str(update["ip"][lamp])
+            self.lamp4_log_0 = logs[4]
+            self.lamp4_log_1 = logs[3]
+            self.lamp4_log_2 = logs[2]
+            self.lamp4_log_3 = logs[1]
+            self.lamp4_log_4 = logs[0]
+        elif lamp == 5:
+            self.lamp5_position = str(update["position"])
+            self.lamp5_ip = str(update["ip"][lamp])
+            self.lamp5_log_0 = logs[4]
+            self.lamp5_log_1 = logs[3]
+            self.lamp5_log_2 = logs[2]
+            self.lamp5_log_3 = logs[1]
+            self.lamp5_log_4 = logs[0]
+
+    def reset_lamp(self, lamp):
+        if lamp != -1:
+            self.proxy.exit[lamp] = 1
+        else:
+            for i in range(self.number_of_lamps):
+                self.proxy.exit[i] = 1
 
     def shuffle(self, rt):
+        self.assign_listeners("x","x")
+
+    def all_streaming_one(self, lamp):
+        listeners = []
+        for i in range(self.number_of_lamps):
+            if i == lamp:
+                listeners.append(lamp)
+            else:
+                listeners.append(-1)
+        self.proxy.listeners = listeners
+
+    def set_peak(self, peak):
+        self.proxy.peak = str(peak)
         self.assign_listeners("x","x")
 
     def assign_listeners(self, lamp, to_lamp):
@@ -99,6 +181,9 @@ class BugsDashboard(GridLayout):
 
         if lamp != "x":
             listeners[lamp] = to_lamp
+            listeners[to_lamp] = -1
+            broadcasters += 1
+        elif lamp == "x" and to_lamp != "x":
             listeners[to_lamp] = -1
             broadcasters += 1
 
@@ -144,9 +229,25 @@ class BugsDashboard(GridLayout):
             if this_id[0] == "status":
                 self.status_ids[int(this_id[1])][int(this_id[3])] = key[1]
 
-class BugsApp(App):
+class Bugs4App(App):
     def build(self):
-        return BugsDashboard()
+        return BugsDashboard(number_of_lamps)
+
+class Bugs5App(App):
+    def build(self):
+        return BugsDashboard(number_of_lamps)
+
+class Bugs6App(App):
+    def build(self):
+        return BugsDashboard(number_of_lamps)
 
 if __name__ == '__main__':
-	BugsApp().run()
+    if number_of_lamps == 4:
+        print "RUN 4"
+        Bugs4App().run()
+    elif number_of_lamps == 5:
+        print "RUN 5"
+        Bugs5App().run()
+    elif number_of_lamps == 6:
+        print "RUN 6"
+        Bugs6App().run()

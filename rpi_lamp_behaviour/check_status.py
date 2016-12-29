@@ -32,9 +32,9 @@ class CheckStatus(object):
 
     def update(self, broadcast, position):
         self.broadcast = broadcast
-        if broadcast == 1:
+        if broadcast == -1:
             return self.position
-        elif broadcast == 0:
+        elif broadcast >= 0:
             self.position = position
             return self.position
 
