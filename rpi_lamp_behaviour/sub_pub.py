@@ -28,7 +28,7 @@ class LampSubPub(object):
 
     def send(self, q):
         while True:
-            self.console = str(q.get())
+            self.console = q.get()
             self.out_update = json.dumps({"ip": self.lamp_ip,"lamp": self.this_lamp, "position": self.position, "console": self.console}, sort_keys=True)
             self.server.send_json(self.out_update)
             q.put("READY")

@@ -18,7 +18,7 @@ class LampStream(object):
         self.peak = peak
         self.rate = rate
         self.current = ""
-        self.log = "Starting stream..."
+        self.log = ["","","","","Starting stream..."]
 
         self.lamp_stream = None
         self.vol = Queue()
@@ -28,17 +28,22 @@ class LampStream(object):
         self.playing = play.get()
         return self.playing
 
-    def status(self):
-        if self.current != self.log:
-            self.current = self.log
-            print self.current
-            return self.current
+    def status(self, log):
+        if log != "GET":
+            if self.current != log:
+                self.current = log
+                update = []
+                update.append(str(log))
+                for i in range(0, len(self.log)-1):
+                    update.append(str(self.log[i]))
+                self.log = update
+            else:
+                pass
         else:
-            return self.current
+            return self.log
 
     def start_stream(self, url):
-        self.log = str(url)
-        self.status()
+        self.status(url)
         url = "rtsp://" + url + ":8554/mic"
         self.lamp_stream = Process(name='listen', target=self.listen, args=(url,))
         self.lamp_stream.daemon = True
@@ -46,45 +51,39 @@ class LampStream(object):
         while self.state(self.play) == False:
             pass
         self.fade("in")
+        self.status("STREAMING")
         self.is_live = True
         while self.is_live == True:
             pass
 
     def stop_stream(self):
-        self.log = "STOPPING..."
-        self.status()
         self.fade("out")
         self.lamp_stream.terminate()
         self.is_live = False
 
     def fade(self, inOut):
         if inOut == "in":
-            self.log = "FADE IN"
-            self.status()
+            self.status("FADING IN...")
             self.fading_in = True
             while self.volume < self.peak and self.fading_out != True:
                 self.volume = self.volume + 0.01
                 self.vol.put(self.volume)
-                self.log = "+ {}".format(self.volume)
-                self.status()
                 sleep(self.rate)
+            self.status("VOL: {}".format(self.volume))
             self.fading_in = False
         elif inOut == "out":
             self.fading_out = True
-            self.log = "FADE OUT"
-            self.status()
+            self.status("FADING OUT...")
             while self.volume > 0.01 and self.fading_in != True:
                 self.volume = self.volume - 0.01
                 self.vol.put(self.volume)
-                self.log = "- {}".format(self.volume)
-                self.status()
                 sleep(self.rate)
+            self.status("VOL: {}".format(self.volume))
             self.fading_out = False
         else:
             pass
 
     def listen(self, url):
-        self.log = "STREAM: {}".format(url)
         self.volume = 0
         self.playing = False
         self.stream.get_by_name("source").set_property("location",url)
@@ -95,22 +94,19 @@ class LampStream(object):
             self.stream.set_state(Gst.State.PLAYING)
             info = self.stream.get_state(0)
             info = str(info[0]).split(" ")
+            print info[1]
             while info[1] == "GST_STATE_CHANGE_ASYNC":
-                #print info[1]
                 info = self.stream.get_state(0)
                 info = str(info[0]).split(" ")
-                self.log = "ASYNC..."
-                self.status()
+                self.status("ASYNC...")
             if info[1] == "GST_STATE_CHANGE_SUCCESS":
-                #print info[1]
-                self.log = "SUCCESS"
-                self.status()
+                print info[1]
+                self.status("SUCCESS")
                 self.playing = True
                 self.play.put(self.playing)
             else:
-                #print info[1]
-                self.log = str(info[1])
-                self.status()
+                print info[1]
+                self.status(str(info[1]))
                 self.stream.set_state(Gst.State.NULL)
 
         while self.playing == True:

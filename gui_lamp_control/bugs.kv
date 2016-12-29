@@ -41,7 +41,6 @@
 		Label:
 			text: "LISTEN"
 
-
 		#Lamp0
 		Label:
 			text: "0"
@@ -52,9 +51,44 @@
 		Label:
 			text: root.lamp0_position
 
-		Label:
-			id: log_0
-			text: root.lamp0_console
+		GridLayout:
+			rows: 6
+			Widget:
+				id: separator
+				size_hint_y: None
+				height: 1
+				canvas:
+					Color:
+						rgb: 0.5,0.5,0.5
+					Rectangle:
+						pos: separator.x, separator.y
+						size: separator.width, 1
+			Label:
+				id: log_0_message_0
+				text: root.lamp0_log_0
+				color: 0.5,0.5,0.5,1
+				font_size: 12
+			Label:
+				id: log_0_message_1
+				text: root.lamp0_log_1
+				color: 0.5,0.5,0.5,1
+				font_size: 12
+			Label:
+				id: log_0_message_2
+				text: root.lamp0_log_2
+				color: 0.5,0.5,0.5,1
+				font_size: 12
+			Label:
+				id: log_0_message_3
+				text: root.lamp0_log_3
+				color: 0.5,0.5,0.5,1
+				font_size: 12
+			Label:
+				id: log_0_message_4
+				text: root.lamp0_log_4
+				color: 0.6,0.8,0.4,1
+				font_size: 12
+
 
 		ToggleButton:
 			id: broadcast_0

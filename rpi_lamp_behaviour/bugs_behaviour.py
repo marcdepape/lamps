@@ -56,22 +56,35 @@ def setup():
 class ConsoleLog(object):
     def __init__(self):
         self.stream = None
-
+        self.log = ["","","","",""]
+        self.console_update = True
+        self.new_message = True
     def set(self, stream):
         self.stream = stream
+    def message(self, stream, msg):
+        stream.status(msg)
+
     def console(self, q):
-        log = ""
         q.put("...")
         while True:
             ready = q.get()
             if ready == "READY":
-                if self.stream != None:
-                    log = str(self.stream.status())
+                if self.stream != None and self.console_update == True:
+                    self.log = self.stream.status("GET")
+                elif self.stream == None and self.console_update == True:
+                    update = []
+                    update.append("LIVE")
+                    for i in range(0, len(self.log)-1):
+                        update.append(str(self.log[i]))
+                    self.log = update
+                    self.console_update = False
+                elif self.stream != None and self.console_update == False:
+                    self.console_update = True
                 else:
-                    log = "BROADCASTING"
+                    pass
             else:
                 pass
-            q.put(log)
+            q.put(self.log)
 
 monitor = ConsoleLog()
 
@@ -119,16 +132,20 @@ if __name__ == '__main__':
                     l.daemon = True
                     l.start()
                     monitor.set(this_stream)
+                    monitor.message(this_stream,"LISTEN TO {}".format(new["listen"]))
                 elif new["listen"] != -1 and old["listen"] == -1:
                     this_stream = LampStream(new["rate"], new["peak"])
                     l = Thread(target=this_stream.start_stream, args=(new["ip"][new["listen"]],))
                     l.daemon = True
                     l.start()
                     monitor.set(this_stream)
+                    monitor.message(this_stream,"SWITCH TO {}".format(new["listen"]))
                 elif new["listen"] == -1:
+                    monitor.message(this_stream,"BROADCAST")
                     this_stream.stop_stream()
                     this_stream = None
                     monitor.set(this_stream)
+
                 else:
                     pass
             position = check_lamp.update(new["broadcast"], new["position"])

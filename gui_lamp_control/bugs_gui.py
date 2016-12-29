@@ -18,7 +18,11 @@ class BugsDashboard(GridLayout):
 
     lamp0_position = StringProperty()
     lamp0_ip = StringProperty()
-    lamp0_console = StringProperty()
+    lamp0_log_0 = StringProperty()
+    lamp0_log_1 = StringProperty()
+    lamp0_log_2 = StringProperty()
+    lamp0_log_3 = StringProperty()
+    lamp0_log_4 = StringProperty()
 
     lamp1_position = StringProperty()
     lamp1_ip = StringProperty()
@@ -39,7 +43,7 @@ class BugsDashboard(GridLayout):
 
     listen_ids = [[0 for i in range(number_of_lamps)] for i in range(number_of_lamps)]
     broadcast_ids = [0 for i in range(number_of_lamps)]
-    status_ids = [0 for i in range(number_of_lamps)]
+    status_ids = [[0 for i in range(number_of_lamps)] for i in range(5)]
 
     def __init__(self, **kwargs):
         super(BugsDashboard, self).__init__(**kwargs)
@@ -69,7 +73,12 @@ class BugsDashboard(GridLayout):
         if lamp == 0:
             self.lamp0_position = str(update["position"])
             self.lamp0_ip = str(update["ip"][lamp])
-            self.lamp0_console = str(update["console"])
+            logs = update["console"]
+            self.lamp0_log_0 = logs[4]
+            self.lamp0_log_1 = logs[3]
+            self.lamp0_log_2 = logs[2]
+            self.lamp0_log_3 = logs[1]
+            self.lamp0_log_4 = logs[0]
         elif lamp == 1:
             self.lamp1_position = str(update["position"])
             self.lamp1_ip = str(update["ip"][lamp])
@@ -133,7 +142,7 @@ class BugsDashboard(GridLayout):
             if this_id[0] == "broadcast":
                 self.broadcast_ids[int(this_id[1])] = key[1]
             if this_id[0] == "status":
-                self.status_ids[int(this_id[1])] = key[1]
+                self.status_ids[int(this_id[1])][int(this_id[3])] = key[1]
 
 class BugsApp(App):
     def build(self):
