@@ -4,3 +4,5 @@
 audio_control/.idea/pylamps.iml
 
 *.pyc
+
+gui_lamp_control/bugs_proxy_sub_pub.pyc
