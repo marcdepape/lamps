@@ -9,23 +9,25 @@
 			text: root.current_time
 
 		GridLayout:
-			rows: 2
+			cols: 2
+			id: peak
 			GridLayout:
-				cols: 2
+				rows: 2
 				Label:
 		            text: "PEAK:"
 					font_size: 12
 				Label:
-			        text: '{}'.format(peak_slider.value)
-			Slider:
-	            id: peak_slider
-	            size_hint_x: None
-	            orientation: 'horizontal'
-				min: 0.25
-				max: 1.5
-				value: 0.5
-				step: 0.01
-	            on_value: root.proxy.peak = self.value
+			        text: root.current_peak
+			GridLayout:
+				rows: 2
+				Button:
+					id: peak_up
+					text: "+"
+					on_press: root.set_peak += 0.1
+				Button:
+					id: peak_down
+					text: "-"
+					on_press: root.set_peak -= 0.1
 
 		Button:
 			text: "SHUFFLE"

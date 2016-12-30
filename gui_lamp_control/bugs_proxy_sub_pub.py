@@ -26,7 +26,7 @@ class LampProxy(object):
 
         # MESSAGE KEYS
         self.rate = 0.025
-        self.peak = 0.5
+        self.peak = 0.0
         self.position = []
         self.lamp_ip = []
         self.listeners = []
