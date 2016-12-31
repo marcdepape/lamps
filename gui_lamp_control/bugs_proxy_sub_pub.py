@@ -52,6 +52,7 @@ class LampProxy(object):
             self.receive = self.frontend.recv_json()
             self.receive = json.loads(self.receive)
             lamp = self.receive["lamp"]
+            self.position[lamp] = self.receive["position"]
             log = ""
             if "console" in self.receive:
                 log = self.receive["console"]

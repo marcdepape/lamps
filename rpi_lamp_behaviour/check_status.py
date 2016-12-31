@@ -4,7 +4,7 @@ import serial
 class CheckStatus(object):
     def __init__(self):
         self.running = True
-        self.broadcast = 0
+        self.listen = 0
         self.position = 0
         self.status = ""
         self.atmega = serial.Serial('/dev/ttyAMA0', 57600)
@@ -30,11 +30,12 @@ class CheckStatus(object):
         if lamp_values[0] == "dial":
             self.position = lamp_values[1]
 
-    def update(self, broadcast, position):
-        self.broadcast = broadcast
-        if broadcast == -1:
+    def update(self, listen, position):
+        self.listen = listen
+        if listen == -1:
             return self.position
-        elif broadcast >= 0:
+        elif listen >= 0:
+
             self.position = position
             return self.position
 
@@ -45,7 +46,7 @@ class CheckStatus(object):
         self.running = True
         while self.running == True:
             sleep(0.1)
-            if self.broadcast == 1:
+            if self.listen == -1:
                 self.get()
-            elif self.broadcast == 0:
+            elif self.listen >= 0:
                 self.set()

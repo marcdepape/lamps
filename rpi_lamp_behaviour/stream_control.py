@@ -34,7 +34,7 @@ class LampStream(object):
                 self.current = log
                 update = []
                 update.append(str(log))
-                for i in range(0, len(self.log)-1):
+                for i in range(5):
                     update.append(str(self.log[i]))
                 self.log = update
             else:

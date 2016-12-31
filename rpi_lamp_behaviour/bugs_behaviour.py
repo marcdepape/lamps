@@ -126,6 +126,9 @@ if __name__ == '__main__':
         if new != -1:
             if new["exit"] == 1:
                 sys.exit(0)
+
+            lamp_update.position = check_lamp.update(new["listen"], new["position"])
+
             if new["listen"] != old["listen"]:
                 if new["listen"] != -1 and old["listen"] != -1:
                     this_stream.stop_stream()

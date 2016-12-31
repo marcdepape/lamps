@@ -105,6 +105,7 @@ class BugsDashboard(GridLayout):
 
         if lamp == 0:
             self.lamp0_position = str(update["position"])
+            print update["position"]
             self.lamp0_ip = str(update["ip"][lamp])
             self.lamp0_log_0 = logs[4]
             self.lamp0_log_1 = logs[3]
