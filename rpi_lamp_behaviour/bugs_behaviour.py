@@ -154,5 +154,4 @@ if __name__ == '__main__':
 
                 else:
                     pass
-            position = check_lamp.update(new["listen"], new["position"])
             old = new

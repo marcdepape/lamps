@@ -84,7 +84,7 @@ class BugsDashboard(GridLayout):
         self.shuffle(0)
 
         Clock.schedule_interval(self.update_GUI, 0.01)
-        Clock.schedule_interval(self.shuffle, 30)
+        Clock.schedule_interval(self.shuffle, 90)
 
     def start_proxy(self):
         p = Thread(name='proxy', target=self.proxy.start)
@@ -105,7 +105,6 @@ class BugsDashboard(GridLayout):
 
         if lamp == 0:
             self.lamp0_position = str(update["position"])
-            print update["position"]
             self.lamp0_ip = str(update["ip"][lamp])
             self.lamp0_log_0 = logs[4]
             self.lamp0_log_1 = logs[3]
@@ -161,7 +160,6 @@ class BugsDashboard(GridLayout):
                 self.proxy.exit[i] = 1
 
     def all_streaming_one(self, lamp):
-        print "ALL!"
         listeners = []
         for i in range(self.number_of_lamps):
             if i != lamp:
@@ -171,20 +169,17 @@ class BugsDashboard(GridLayout):
         self.update_button_state(listeners)
 
     def shuffle(self, rt):
-        print "SHUFFLE!"
         listeners = ["x" for i in range(self.number_of_lamps)]
         broadcasters = 0
         self.assign_listeners(listeners, broadcasters)
 
     def set_peak(self, peak):
-        print "set_peak"
         self.proxy.peak = str(peak)
         listeners = ["x" for i in range(self.number_of_lamps)]
         broadcasters = 0
         self.assign_listeners(listeners, broadcasters)
 
     def manual_listen(self, lamp, to_lamp):
-        print "MANUAL LISTEN"
         listeners = ["x" for i in range(self.number_of_lamps)]
         listeners[lamp] = to_lamp
         listeners[to_lamp] = -1
@@ -192,14 +187,12 @@ class BugsDashboard(GridLayout):
         self.assign_listeners(listeners, broadcasters)
 
     def manual_broadcast(self, lamp):
-        print "MANUAL BORADCAST"
         listeners = ["x" for i in range(self.number_of_lamps)]
         listeners[lamp] = -1
         broadcasters = 1
         self.assign_listeners(listeners, broadcasters)
 
     def assign_listeners(self, listeners, broadcasters):
-        print "ASSIGN LISTENERS"
         print listeners
         broadcast_lamps = []
         while broadcasters < int(self.number_of_lamps/2):
@@ -208,7 +201,6 @@ class BugsDashboard(GridLayout):
                 listeners[assignment] = -1
                 broadcasters += 1
                 broadcast_lamps.append(assignment)
-        print "BROADCASTERS {}".format(listeners)
 
         for i in range(self.number_of_lamps):
             if listeners[i] == "x":
@@ -223,7 +215,6 @@ class BugsDashboard(GridLayout):
         self.update_button_state(listeners)
 
     def update_button_state(self, listeners):
-        print "BUTTONS!"
         for i in range(self.number_of_lamps):
             self.broadcast_ids[i].state = "normal"
             for j in range(self.number_of_lamps):
@@ -237,7 +228,6 @@ class BugsDashboard(GridLayout):
 
         print listeners
         self.proxy.listeners = listeners
-        print "END!"
 
     def get_ids(self):
         i = 0
