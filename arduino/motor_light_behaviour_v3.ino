@@ -1,6 +1,6 @@
 #include "SoftwareSerial.h"
 
-String project_name = "motor_light_behaviour_v2";
+String project_name = "motor_light_behaviour_v3";
 
 SoftwareSerial ss(A2, A3); // RX + TX
 
@@ -18,7 +18,7 @@ int servoReadMax = 0;
 int servoSetMax = 180;
 int servoSetMin = 0;
 int pos = 0;
-int timer = 10;
+int timer = 5;
 
 // NEO PIXELS
 #include <FastLED.h>
@@ -53,7 +53,8 @@ void setup() {
 
   // Servo Minimum
   lampDial.attach(servoPin);
-  delay(100);
+  lampDial.write(90);
+  delay(200);
   setLow();
   for (int i = 0; i < 20; i++) {
     int input = analogRead(servoReadPin);
@@ -108,41 +109,26 @@ void incomingRequests() {
   while (ss.available() > 0) {
     in = ss.read();
     if (in == 'h' || in == 'l' || in == 'r' || in == 't') {
+      msg = "";
       msg = String(in);
     } else if (in == '0' || in == '1' || in == '2' || in == '3' || in == '4' || in == '5' || in == '6' || in == '7' || in == '8' || in == '9') {
-      if (msg.startsWith("h") || msg.startsWith("l") || msg.startsWith("r") || msg.startsWith("t")) {
-        msg = msg + String(in);
-      } else {
-        while (ss.available() > 0) {
-          in = ss.read();
-          in = 'z';
-        }
-      }
-    } else if (in == '\n') {
-      processCommand(msg);
-      if (ss.available() > 0) {
-        while (ss.available() > 0) {
-          in = ss.read();
-        }  
-        in = 'z';      
-      }
-      msg = "";
+      msg = msg + String(in);
     } else {
-      sendReply("ERROR", msg);
-      if (ss.available() > 0) {
-        while (ss.available() > 0) {
-          in = ss.read();
-        }  
-        in = 'z';      
-      }
-      msg = "";
+      
     }
+  }
+  if (msg.startsWith("h") || msg.startsWith("l") || msg.startsWith("r") || msg.startsWith("t") ) {
+    processCommand(msg);
+    in = 'z';
+  } else {
+    sendReply("ERROR", msg);
+    in = 'z';
   }
 }
 
 void processCommand(String cmd) {
   String data = "";
-  Serial.println("PROCESS COMMAND");
+  //Serial.println("PROCESS COMMAND");
   if (cmd.length() > 1) {
     for (int i = 1; i < sizeof(cmd) - 1; i++) {
       data = data + cmd[i];
@@ -150,34 +136,39 @@ void processCommand(String cmd) {
   }
   cmd = cmd[0];
 
+  Serial.println(cmd[0]);
   // set lamp to high
   if (cmd == "h") {
     setHigh();
-    Serial.println("HIGH / NO PULSE");
+    //Serial.println("HIGH / NO PULSE");
 
     // set lamp to low
   } else if (cmd == "l") {
     setLow();
-    Serial.println("LOW / PULSE");
+    //Serial.println("LOW / PULSE");
 
     // read current position
   } else if (cmd == "r") {
     sendReply("READ", String(readServo()));
+    //Serial.print("READ");
   } else if (cmd == "t") {
-    timer = data.toInt();
-    sendReply("TIMER", data);
-    Serial.print("TIMER: ");
-    Serial.println(timer);
+    if (data.toInt() > 0) {
+      timer = data.toInt();
+    }
+    sendReply("TIMER", String(data.toInt()));
+    //Serial.print("TIMER: ");
+    //Serial.println(timer);
 
     // handle errors
   } else {
-    sendReply("ERROR", cmd);
+    sendReply("CMD ERROR", cmd);
+    //Serial.print("ERROR");
   }
 }
 
 int sendReply(String message, String reply) {
-  Serial.print(message + "   ");
-  Serial.println(reply);
+  //Serial.print(message + "   ");
+  //Serial.println(reply);
   message = message + ":";
   ss.print(message);
   ss.println(reply);
@@ -194,7 +185,7 @@ int readServo() {
 
 void setHigh() {
   pulse = false;
-  
+
   lampDial.attach(servoPin);
   int reading = analogRead(servoReadPin);
   reading = constrain(map(reading, servoReadMin, servoReadMax, 0, 180), 0, 180);
@@ -210,17 +201,13 @@ void setHigh() {
 
 void setLow() {
   pulse = true;
-  while(mic < 255) {
-    mic++;
-    setTop(mic);
-    delay(5);
-  }
+
   lampDial.attach(servoPin);
   int reading = analogRead(servoReadPin);
-  reading = constrain(map(reading, servoSetMin*1.1, servoReadMax, 0, 180), 0, 180);
+  reading = constrain(map(reading, servoReadMin * 1.1, servoReadMax, 0, 180), 0, 180);
   while (reading >= servoSetMin) {
     lampDial.write(reading);
-    setBoth(map(reading, servoSetMin*1.1, servoSetMax, 0, 255));
+    setBoth(map(reading, servoSetMin, servoSetMax, 0, 255));
     reading--;
     delay(timer);
   }
