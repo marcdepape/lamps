@@ -129,7 +129,8 @@ if __name__ == '__main__':
 
             if new["listen"] != old["listen"]:
                 if new["listen"] != -1 and old["listen"] != -1:
-                    check_lamp.update('h',0)
+                    # c = change lamps
+                    check_lamp.update('c',0)
                     this_stream.stop_stream()
                     this_stream = None
                     this_stream = LampStream(new["rate"], new["peak"])
@@ -139,7 +140,8 @@ if __name__ == '__main__':
                     monitor.set(this_stream)
                     monitor.message(this_stream,"LISTEN TO {}".format(new["listen"]))
                 elif new["listen"] != -1 and old["listen"] == -1:
-                    check_lamp.update('h',0)
+                    # l = listen
+                    check_lamp.update('l',0)
                     this_stream = LampStream(new["rate"], new["peak"])
                     l = Thread(target=this_stream.start_stream, args=(new["ip"][new["listen"]],))
                     l.daemon = True
@@ -147,7 +149,8 @@ if __name__ == '__main__':
                     monitor.set(this_stream)
                     monitor.message(this_stream,"SWITCH TO {}".format(new["listen"]))
                 elif new["listen"] == -1:
-                    check_lamp.update('l',0)
+                    # b = broadcast mode
+                    check_lamp.update('b',0)
                     monitor.message(this_stream,"BROADCAST")
                     this_stream.stop_stream()
                     this_stream = None

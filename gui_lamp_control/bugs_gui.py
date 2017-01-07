@@ -68,6 +68,7 @@ class BugsDashboard(GridLayout):
     start_time = time()
     current_time = StringProperty()
     current_peak = StringProperty()
+    shuffle_setting = StringProperty()
 
     def __init__(self, num, **kwargs):
         super(BugsDashboard, self).__init__(**kwargs)
@@ -76,6 +77,7 @@ class BugsDashboard(GridLayout):
         self.proxy = LampProxy(self.number_of_lamps)
         self.start_proxy()
         self.set_peak = 0.5
+        self.shuffle_interval = 300
 
         self.listen_ids = [[0 for i in range(self.number_of_lamps)] for i in range(self.number_of_lamps)]
         self.broadcast_ids = [0 for i in range(self.number_of_lamps)]
@@ -84,7 +86,8 @@ class BugsDashboard(GridLayout):
         self.shuffle(0)
 
         Clock.schedule_interval(self.update_GUI, 0.01)
-        Clock.schedule_interval(self.shuffle, 90)
+        Clock.schedule_once(self.shuffle, 10)
+
 
     def start_proxy(self):
         p = Thread(name='proxy', target=self.proxy.start)
@@ -169,6 +172,7 @@ class BugsDashboard(GridLayout):
         self.update_button_state(listeners)
 
     def shuffle(self, rt):
+        Clock.schedule_once(self.shuffle, self.shuffle_interval)
         listeners = ["x" for i in range(self.number_of_lamps)]
         broadcasters = 0
         self.assign_listeners(listeners, broadcasters)
