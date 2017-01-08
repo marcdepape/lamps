@@ -31,6 +31,12 @@ class LampProxy(object):
         self.lamp_ip = []
         self.listeners = []
         self.exit = []
+        self.turn = 3
+        self.fade = 3
+        self.hue = 0
+        self.saturation = 0
+        self.parameters = [self.turn, self.fade, self.hue, self.saturation]
+
         for i in range(number_of_lamps):
             self.position.append(-1)
             self.lamp_ip.append(-1)
@@ -39,7 +45,7 @@ class LampProxy(object):
         self.log = "waiting..."
         self.receive = ""
         self.live = 0
-        self.message = json.dumps({"ip": -1, "lamp": -1, "rate": self.rate, "peak": self.peak, "live": -1, "position": -1, "listen": -1, "exit": self.exit, "console": self.log})
+        self.message = json.dumps({"ip": -1, "lamp": -1, "rate": self.rate, "peak": self.peak, "live": -1, "position": -1, "listen": -1, "exit": self.exit, "console": self.log, "parameters": self.parameters})
 
     def stop(self):
         self.running = False
@@ -54,7 +60,9 @@ class LampProxy(object):
             log = ""
             if "console" in self.receive:
                 log = self.receive["console"]
-            self.message = json.dumps({"ip": self.lamp_ip, "lamp": lamp, "rate": self.rate, "peak": self.peak, "live": self.live, "position": self.position[lamp], "listen": self.listeners[lamp], "exit": self.exit[lamp], "console": log})
+
+            self.parameters = [self.turn, self.fade, self.hue, self.saturation]
+            self.message = json.dumps({"ip": self.lamp_ip, "lamp": lamp, "rate": self.rate, "peak": self.peak, "live": self.live, "position": self.position[lamp], "listen": self.listeners[lamp], "exit": self.exit[lamp], "console": log, "parameters": self.parameters})
             self.backend.send_json(self.message)
 
             if self.exit[lamp] == 1:

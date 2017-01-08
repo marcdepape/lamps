@@ -2,32 +2,16 @@
 	GridLayout:
 		cols: 6
 		size: root.size
+
+		# SETTINGS ROW 1
 		Label
 			text: "BUGS"
 
 		Label
 			text: root.current_time
 
-		GridLayout:
-			cols: 2
-			id: peak
-			GridLayout:
-				rows: 2
-				Label:
-		            text: "PEAK:"
-					font_size: 12
-				Label:
-			        text: root.current_peak
-			GridLayout:
-				rows: 2
-				Button:
-					id: peak_up
-					text: "+"
-					on_press: root.set_peak += 0.1
-				Button:
-					id: peak_down
-					text: "-"
-					on_press: root.set_peak -= 0.1
+		Label
+			text: ""
 
 		Button:
 			text: "SHUFFLE"
@@ -95,6 +79,134 @@
 					text: "4"
 					background_color: 1.0, 0.0, 0.0, 1.0
 					on_press: root.reset_lamp(4)
+
+		# SETTINGS ROW 2
+
+		GridLayout:
+			cols: 2
+			id: shuffle
+			GridLayout:
+				rows: 2
+				Label:
+		            text: "SHUFFLE"
+					font_size: 12
+				Label:
+			        text: root.current_shuffle
+			GridLayout:
+				rows: 2
+				Button:
+					id: shuffle_up
+					text: "+"
+					on_press: root.set_shuffle += 10
+				Button:
+					id: shuffle_down
+					text: "-"
+					on_press: root.set_shuffle -= 10
+
+		GridLayout:
+			cols: 2
+			id: peak
+			GridLayout:
+				rows: 2
+				Label:
+		            text: "PEAK"
+					font_size: 12
+				Label:
+			        text: root.current_peak
+			GridLayout:
+				rows: 2
+				Button:
+					id: peak_up
+					text: "+"
+					on_press: root.set_peak += 0.1
+				Button:
+					id: peak_down
+					text: "-"
+					on_press: root.set_peak -= 0.1
+
+		GridLayout:
+			cols: 2
+			id: turn
+			GridLayout:
+				rows: 2
+				Label:
+		            text: "TURN"
+					font_size: 12
+				Label:
+			        text: root.current_turn
+			GridLayout:
+				rows: 2
+				Button:
+					id: turn_up
+					text: "+"
+					on_press: root.set_turn += 1
+				Button:
+					id: turn_down
+					text: "-"
+					on_press: root.set_turn -= 1
+
+		GridLayout:
+			cols: 2
+			id: fade
+			GridLayout:
+				rows: 2
+				Label:
+		            text: "FADE"
+					font_size: 12
+				Label:
+			        text: root.current_fade
+			GridLayout:
+				rows: 2
+				Button:
+					id: fade_up
+					text: "+"
+					on_press: root.set_fade += 1
+				Button:
+					id: fade_down
+					text: "-"
+					on_press: root.set_fade -= 1
+
+		GridLayout:
+			cols: 2
+			id: hue
+			GridLayout:
+				rows: 2
+				Label:
+		            text: "HUE"
+					font_size: 12
+				Label:
+			        text: root.current_hue
+			GridLayout:
+				rows: 2
+				Button:
+					id: hue_up
+					text: "+"
+					on_press: root.set_hue += 1
+				Button:
+					id: hue_down
+					text: "-"
+					on_press: root.set_hue -= 1
+
+		GridLayout:
+			cols: 2
+			id: saturation
+			GridLayout:
+				rows: 2
+				Label:
+		            text: "SAT"
+					font_size: 12
+				Label:
+			        text: root.current_saturation
+			GridLayout:
+				rows: 2
+				Button:
+					id: saturation_up
+					text: "+"
+					on_press: root.set_saturation += 1
+				Button:
+					id: saturation_down
+					text: "-"
+					on_press: root.set_saturation -= 1
 
 		# HEADINGS
 		Label:

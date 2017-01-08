@@ -1,6 +1,6 @@
 #include "SoftwareSerial.h"
 
-String project_name = "motor_light_behaviour_v3";
+String project_name = "motor_light_behaviour_v4";
 
 SoftwareSerial ss(A2, A3); // RX + TX
 
@@ -18,7 +18,7 @@ int servoReadMax = 0;
 int servoSetMax = 180;
 int servoSetMin = 0;
 int pos = 0;
-int timer = 5;
+int turn_step = 1;
 
 // NEO PIXELS
 #include <FastLED.h>
@@ -31,6 +31,8 @@ CRGB bottom_neo_ring[bottom_pixels];
 #define UPDATES_PER_SECOND 100
 int hue = 0;
 int saturation = 0;
+int fade_step = 3;
+boolean change = true;
 boolean pulse = true;
 
 // MICROPHONE
@@ -51,37 +53,7 @@ void setup() {
   pinMode(servoReadPin, INPUT);
   pinMode(servoPin, OUTPUT);
 
-  // Servo Minimum
-  lampDial.attach(servoPin);
-  lampDial.write(90);
-  delay(200);
-  setLow();
-  for (int i = 0; i < 20; i++) {
-    int input = analogRead(servoReadPin);
-    if (input < servoReadMin) {
-      servoReadMin = input;
-    }
-    delay(10);
-  }
-  delay(100);
-
-  // Servo Max
-  setHigh();
-  for (int i = 0; i < 20; i++) {
-    int input = analogRead(servoReadPin);
-    if (input > servoReadMax) {
-      servoReadMax = input;
-    }
-    delay(10);
-  }
-
-  delay(100);
-  lampDial.write(servoSetMin);
-  lampDial.detach();
-  Serial.print("Max: ");
-  Serial.print(servoReadMax);
-  Serial.print("   Min: ");
-  Serial.println(servoReadMin);
+  servoCalibration();
 
   // NEOPIXEL--------------------------------------------
   FastLED.addLeds<NEOPIXEL, 10>(top_neo_ring, top_pixels);
@@ -108,16 +80,16 @@ void loop() {
 void incomingRequests() {
   while (ss.available() > 0) {
     in = ss.read();
-    if (in == 'h' || in == 'l' || in == 'r' || in == 't') {
+    if (in == 'r' || in == 'c' || in == 'l' || in == 'b' || in == 't' || in == 'f' || in == 'h' || in == 's') {
       msg = "";
       msg = String(in);
     } else if (in == '0' || in == '1' || in == '2' || in == '3' || in == '4' || in == '5' || in == '6' || in == '7' || in == '8' || in == '9') {
       msg = msg + String(in);
     } else {
-      
+
     }
   }
-  if (msg.startsWith("h") || msg.startsWith("l") || msg.startsWith("r") || msg.startsWith("t") ) {
+  if (msg.startsWith("r") || msg.startsWith("c") || msg.startsWith("l") || msg.startsWith("b") || msg.startsWith("t") || msg.startsWith("f") || msg.startsWith("h") || msg.startsWith("s")) {
     processCommand(msg);
     in = 'z';
   } else {
@@ -135,30 +107,34 @@ void processCommand(String cmd) {
     }
   }
   cmd = cmd[0];
+  int val = data.toInt();
 
-  Serial.println(cmd[0]);
-  // set lamp to high
-  if (cmd == "h") {
-    setHigh();
-    //Serial.println("HIGH / NO PULSE");
+  if (cmd != "r") {
+    Serial.println(cmd[0]);
+  }
 
-    // set lamp to low
-  } else if (cmd == "l") {
-    setLow();
-    //Serial.println("LOW / PULSE");
-
-    // read current position
+  if (cmd == "l") {
+    setListen();
+  } else if (cmd == "b") {
+    setBroadcast();
+  } else if (cmd == "c") {
+    setChange();
   } else if (cmd == "r") {
+    change = true;
     sendReply("READ", String(readServo()));
     //Serial.print("READ");
   } else if (cmd == "t") {
-    if (data.toInt() > 0) {
-      timer = data.toInt();
-    }
-    sendReply("TIMER", String(data.toInt()));
-    //Serial.print("TIMER: ");
-    //Serial.println(timer);
-
+    turn_step = val;
+    sendReply("TURN", String(val));
+  } else if (cmd == "f") {
+    fade_step = val;
+    sendReply("FADE", String(val));
+  } else if (cmd == "h") {
+    hue = val;
+    sendReply("HUE", String(val));
+  } else if (cmd == "s") {
+    saturation = val;
+    sendReply("SATURATION", String(val));
     // handle errors
   } else {
     sendReply("CMD ERROR", cmd);
@@ -179,40 +155,67 @@ int sendReply(String message, String reply) {
 
 int readServo() {
   int reading = analogRead(servoReadPin);
-  reading = constrain(map(reading, servoReadMin, servoReadMax, 0, 180), 0, 180);
+  reading = constrain(map(reading, servoReadMin, servoReadMax, -5, 185), 0, 180);
   return reading;
 }
 
-void setHigh() {
-  pulse = false;
+void setListen() {
+  int reading = readServo();
 
-  lampDial.attach(servoPin);
-  int reading = analogRead(servoReadPin);
-  reading = constrain(map(reading, servoReadMin, servoReadMax, 0, 180), 0, 180);
-  while (reading <= servoSetMax) {
-    lampDial.write(reading);
-    setBoth(map(reading, servoSetMin, servoSetMax, 0, 255));
-    reading++;
-    delay(timer);
+  if (change) {
+    pulse = false;
+
+    for (int i = mic; i < reading; i = i + fade_step) {
+      setBottom(constrain(i, 0, 255));
+    }
+
+    lampDial.attach(servoPin);
+    while (reading <= servoSetMax) {
+      lampDial.write(reading);
+      setBoth(map(reading, servoSetMin, servoSetMax, 0, 255));
+      reading = reading + turn_step;
+      delay(1);
+    }
+    setBoth(0);
+    lampDial.detach();
+    change = false;
   }
-  lampDial.detach();
-  sendReply("HIGH", String(reading));
+  sendReply("LISTEN", String(reading));
 }
 
-void setLow() {
-  pulse = true;
+void setBroadcast() {
+  int reading = readServo();
 
-  lampDial.attach(servoPin);
-  int reading = analogRead(servoReadPin);
-  reading = constrain(map(reading, servoReadMin * 1.1, servoReadMax, 0, 180), 0, 180);
-  while (reading >= servoSetMin) {
-    lampDial.write(reading);
-    setBoth(map(reading, servoSetMin, servoSetMax, 0, 255));
-    reading--;
-    delay(timer);
+  if (change) {
+    pulse = true;
+    lampDial.attach(servoPin);
+    while (reading >= servoSetMin) {
+      lampDial.write(reading);
+      setBoth(map(reading, servoSetMin, servoSetMax, 0, 255));
+      reading = reading - turn_step;
+      delay(1);
+    }
+    setBoth(0);
+    lampDial.detach();
+    change = false;
   }
-  lampDial.detach();
-  sendReply("LOW", String(reading));
+  sendReply("BROADCAST", String(reading));
+}
+
+void setChange() {
+  int reading = readServo();
+  pulse = false;
+
+  if (change) {
+    for (int i = reading; i > 0; i = i - fade_step) {
+      setTop(constrain(i, 0, 255));
+    }
+    for (int i = 0; i < 255; i = i + fade_step) {
+      setTop(constrain(i, 0, 255));
+    }
+    change = false;
+  }
+  sendReply("CHANGE", String(reading));
 }
 
 // NEO PIXEL BEHAVIOUR ---------------------------------------------------------------
@@ -274,5 +277,61 @@ int pulseMic() {
   //Serial.print(" : ");
   peakToPeak = constrain(map(peakToPeak, 1, 30, 0, 255), 0, 255);
   return peakToPeak;
+}
+
+// SERVO CALIBRATION ---------------------------------
+
+void servoCalibration() {
+  lampDial.attach(servoPin);
+  lampDial.write(90);
+  delay(200);
+  
+  int reading = readServo();
+  while (reading >= servoSetMin) {
+    lampDial.write(reading);
+    reading--;
+    delay(50);
+  }
+  lampDial.write(0);
+  delay(200);
+  
+  for (int i = 0; i < 100; i++) {
+    int input = analogRead(servoReadPin);
+    if (input < servoReadMin) {
+      servoReadMin = input;
+      delay(10);
+    }
+  }
+
+  // Servo Max
+  reading = readServo();
+  while (reading <= servoSetMax) {
+    lampDial.write(reading);
+    reading++;
+    delay(50);
+  }
+  lampDial.write(180);
+  delay(200);
+  
+  for (int i = 0; i < 100; i++) {
+    int input = analogRead(servoReadPin);
+    if (input > servoReadMax) {
+      servoReadMax = input;
+      delay(10);
+    }
+  }
+
+  reading = readServo();
+  while (reading >= 90) {
+    lampDial.write(90);
+    reading--;
+    delay(50);
+  }
+  delay(200);
+  lampDial.detach();
+  Serial.print("Max: ");
+  Serial.print(servoReadMax);
+  Serial.print("   Min: ");
+  Serial.println(servoReadMin);
 }
 

@@ -42,12 +42,12 @@ m.start()
 # START SUB PUB
 lamp_update = LampSubPub(lamp_ip,this_lamp)
 
-def setup():
+def setup(check_lamp):
     print "SETING UP LAMPS..."
     while True:
         intro = lamp_update.receive()
         if intro != -1:
-            if intro["live"] == 1:
+            if intro["live"] == 1 and check_lamp.atmega_ready == True:
                 ping_all.update(intro["ip"])
                 print "ALL LAMPS READY!"
                 return intro
@@ -110,7 +110,7 @@ if __name__ == '__main__':
     c.start()
     sleep(3)
 
-    old = setup()
+    old = setup(check_lamp)
 
     # LAMP STREAM
     this_stream = LampStream(old["rate"], old["peak"])
@@ -126,6 +126,17 @@ if __name__ == '__main__':
         if new != -1:
             if new["exit"] == 1:
                 sys.exit(0)
+
+            if new["parameters"] != old["parameters"]:
+                parameters = new["parameters"]
+                if parameters[0] != check_lamp.turn:
+                    check_lamp.update('t', parameters[0])
+                if parameters[1] != check_lamp.fade:
+                    check_lamp.update('f', parameters[1])
+                if parameters[2] != check_lamp.hue:
+                    check_lamp.update('h', parameters[2])
+                if parameters[3] != check_lamp.saturation:
+                    check_lamp.update('s', parameters[3])
 
             if new["listen"] != old["listen"]:
                 if new["listen"] != -1 and old["listen"] != -1:
