@@ -218,13 +218,11 @@ class BugsDashboard(GridLayout):
     def dial_trigger(self, lamp, position):
         if self.active_dial == True:
             if self.proxy.listeners[lamp] == -1 and position > 160:
-                if lamp == 0:
-                    self.dial_listen(lamp)
-                    self.active_dial = False
+                self.dial_listen(lamp)
+                self.active_dial = False
             elif self.proxy.listeners[lamp] > -1 and position < 20:
-                if lamp == 0:
-                    self.manual_broadcast(lamp)
-                    self.active_dial = False
+                self.manual_broadcast(lamp)
+                self.active_dial = False
             else:
                 pass
         else:
